@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { avanceStyles } from '../styles/encargado/avanceStyles';
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 // Tipos basados en Firestore
 type CaseUpdate = {
   id: string;
@@ -127,7 +129,7 @@ export default function EncargadoAvancesScreen({ navigation }: any) {
           onPress: async () => {
             setDeletingId(updateId);
             try {
-              const response = await fetch(`http://192.168.1.145:8000/cases/updates/${updateId}`, {
+              const response = await fetch(`${API_URL}/cases/updates/${updateId}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Bearer ${token}`,

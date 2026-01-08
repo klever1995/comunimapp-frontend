@@ -15,6 +15,8 @@ import {
   View
 } from 'react-native';
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 interface User {
   id: string;
   username: string;
@@ -152,7 +154,7 @@ export default function AdminUsersScreen() {
     setActionLoading(`toggle-${userId}`);
     
     try {
-      const response = await fetch(`http://192.168.1.145:8000/users/${userId}/toggle-active?is_active=${newActiveState}`, {
+      const response = await fetch(`${API_URL}/users/${userId}/toggle-active?is_active=${newActiveState}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -193,7 +195,7 @@ export default function AdminUsersScreen() {
           onPress: async () => {
             setActionLoading(`delete-${userId}`);
             try {
-              const response = await fetch(`http://192.168.1.145:8000/users/${userId}`, {
+              const response = await fetch(`${API_URL}/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Bearer ${token}`,

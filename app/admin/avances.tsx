@@ -7,14 +7,16 @@ import { useLocalSearchParams } from 'expo-router';
 import { collection, doc, getDoc, onSnapshot, query, Timestamp, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 // Tipos basados en Firestore
 type CaseUpdate = {
@@ -134,7 +136,7 @@ export default function AdminAvancesScreen() {
           onPress: async () => {
             setDeletingId(updateId);
             try {
-              const response = await fetch(`http://192.168.1.145:8000/cases/updates/${updateId}`, {
+              const response = await fetch(`${API_URL}/cases/updates/${updateId}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Bearer ${token}`,

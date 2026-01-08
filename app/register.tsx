@@ -3,12 +3,12 @@ import { SafeArea } from '@/components/ui/safe-area';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { registerStyles } from './styles/registerStyles';
@@ -50,9 +50,9 @@ export default function RegisterScreen() {
 
     try {
       // IMPORTANTE: Cambia por tu URL real
-      const API_BASE_URL = 'http://192.168.1.145:8000/auth';
+      const API_URL = process.env.EXPO_PUBLIC_API_URL;
       
-      const response = await fetch(`${API_BASE_URL}/register/reportante`, {
+      const response = await fetch(`${API_URL}/auth/register/reportante`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

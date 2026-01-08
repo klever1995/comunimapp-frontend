@@ -16,6 +16,8 @@ import {
   View,
 } from 'react-native';
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 interface Report {
   id: string;
   description: string;
@@ -108,7 +110,7 @@ export default function AdminReportScreen() {
 
   const fetchEncargados = async () => {
     try {
-      const response = await fetch('http://192.168.1.145:8000/users/?role=encargado', {
+      const response = await fetch(`${API_URL}/users/?role=encargado`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -169,7 +171,7 @@ export default function AdminReportScreen() {
     if (!selectedReport || !token) return;
     
     try {
-      const response = await fetch(`http://192.168.1.145:8000/reports/${selectedReport.id}/assign?encargado_id=${encargadoId}`, {
+      const response = await fetch(`${API_URL}/reports/${selectedReport.id}/assign?encargado_id=${encargadoId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -195,7 +197,7 @@ export default function AdminReportScreen() {
     if (!selectedReport || !token) return;
     
     try {
-      const response = await fetch(`http://192.168.1.145:8000/reports/${selectedReport.id}/status?new_status=${newStatus}`, {
+      const response = await fetch(`${API_URL}/reports/${selectedReport.id}/status?new_status=${newStatus}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -228,7 +230,7 @@ export default function AdminReportScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`http://192.168.1.145:8000/reports/${reportId}`, {
+              const response = await fetch(`${API_URL}/reports/${reportId}`, {
                 method: 'DELETE',
                 headers: {
                   'Authorization': `Bearer ${token}`,

@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import { crearAvanceStyles } from '../styles/encargado/crear-avanceStyles';
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 // Tipos según el endpoint
 enum UpdateType {
   AVANCE = 'avance',
@@ -175,7 +177,7 @@ export default function CrearAvanceScreen() {
         } as any);
       });
 
-      const response = await fetch('http://192.168.1.145:8000/cases/updates', {
+      const response = await fetch(`${API_URL}/cases/updates`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

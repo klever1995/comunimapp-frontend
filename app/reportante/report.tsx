@@ -36,6 +36,7 @@ export default function ReportScreen() {
   const [city, setCity] = useState<string>('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [priority, setPriority] = useState<ReportPriority>(ReportPriority.MEDIA);
+  const API_URL = process.env.API_URL;
   
   // Estados de ubicación
   const [isGettingLocation, setIsGettingLocation] = useState(false);
@@ -240,7 +241,7 @@ export default function ReportScreen() {
         } as any);
       });
 
-      const response = await fetch('http://192.168.1.145:8000/reports/', {
+      const response = await fetch(`${API_URL}/reports/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

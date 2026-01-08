@@ -5,15 +5,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 type UserRole = 'admin' | 'encargado' | 'reportante';
 
@@ -88,7 +90,6 @@ export default function AdminCreateUserScreen() {
     setIsLoading(true);
 
     try {
-      const API_BASE_URL = 'http://192.168.1.145:8000/auth';
       let endpoint = '';
       let requestBody: any = {
         username: username,
@@ -113,7 +114,7 @@ export default function AdminCreateUserScreen() {
           break;
       }
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${API_URL}/auth${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -10,6 +10,8 @@ import React, {
 import { Alert } from 'react-native';
 import { auth as firebaseAuth } from '../lib/firebase'; // Asegúrate de la ruta correcta
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 /*=======================
    TIPOS
 ======================= */
@@ -82,7 +84,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   });
 
   const STORAGE_KEY = '@Comunimapp_auth';
-  const API_BASE_URL = 'http://192.168.1.145:8000';
 
   useEffect(() => {
     loadStoredAuth();
@@ -156,7 +157,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const login = async (credentials: LoginCredentials): Promise<User> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       //  NUEVO: Obtener Custom Token para Firebase
       // ==========================
       try {
-        const tokenResponse = await fetch(`${API_BASE_URL}/auth/firebase-token`, {
+        const tokenResponse = await fetch(`${API_URL}/auth/firebase-token`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${data.access_token}`,
@@ -250,7 +251,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -296,7 +297,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (!authState.token) return false;
 
       const response = await fetch(
-        `${API_BASE_URL}/auth/verify-token`,
+        `${API_URL}/auth/verify-token`,
         {
           headers: {
             Authorization: `Bearer ${authState.token}`,
