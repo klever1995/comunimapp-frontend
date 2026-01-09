@@ -36,7 +36,7 @@ export default function ReportScreen() {
   const [city, setCity] = useState<string>('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [priority, setPriority] = useState<ReportPriority>(ReportPriority.MEDIA);
-  const API_URL = process.env.API_URL;
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
   
   // Estados de ubicación
   const [isGettingLocation, setIsGettingLocation] = useState(false);
