@@ -1,7 +1,7 @@
 // app/admin/report.tsx - VERSIÓN CON TIEMPO REAL
-import { reportStyles } from '@/app/styles/admin/reportStyles';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
+import { reportStyles } from '@/styles/admin/reportStyles';
 import { router } from 'expo-router';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';

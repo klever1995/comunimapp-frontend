@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { reportStyles } from '../styles/reportante/reportStyles';
+import { reportStyles } from '../../styles/reportante/reportStyles';
 
 // Prioridades según el endpoint
 enum ReportPriority {

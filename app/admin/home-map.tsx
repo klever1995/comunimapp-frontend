@@ -1,7 +1,7 @@
 // app/admin/home-map.tsx
-import { homeMapStyles } from '@/app/styles/admin/home-mapStyles';
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase';
+import { homeMapStyles } from '@/styles/admin/home-mapStyles';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';

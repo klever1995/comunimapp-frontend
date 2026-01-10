@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { historyStyles } from '../styles/encargado/historyStyles';
+import { historyStyles } from '../../styles/encargado/historyStyles';
 
 // Tipo para los reportes (basado en Firebase)
 type Report = {

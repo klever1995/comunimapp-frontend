@@ -1,7 +1,7 @@
 // app/admin/create-user.tsx - VERSIÓN CORREGIDA
-import { createUserStyles } from '@/app/styles/admin/create-userStyles';
 import { SafeArea } from '@/components/ui/safe-area';
 import { useAuth } from '@/hooks/useAuth';
+import { createUserStyles } from '@/styles/admin/create-userStyles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {

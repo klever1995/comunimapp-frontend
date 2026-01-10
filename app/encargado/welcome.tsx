@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { welcomeStyles } from '../styles/encargado/welcomeStyles';
+import { welcomeStyles } from '../../styles/encargado/welcomeStyles';
 
 export default function EncargadoWelcomeScreen() {
   

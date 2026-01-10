@@ -3,7 +3,7 @@ import { SafeArea } from '@/components/ui/safe-area';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { Image, Text } from 'react-native';
-import { homeStyles } from '../styles/encargado/homeStyles';
+import { homeStyles } from '../../styles/encargado/homeStyles';
 
 // Importamos las pantallas del encargado (las crearemos después)
 import EncargadoHistoryScreen from './history'; // Por crear

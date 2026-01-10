@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { welcomeStyles } from '../styles/reportante/welcomeStyles';
+import { welcomeStyles } from '../../styles/reportante/welcomeStyles';
 
 export default function ReportanteWelcomeScreen() {
   

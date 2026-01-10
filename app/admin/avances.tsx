@@ -1,8 +1,8 @@
 // app/admin/avances.tsx
-import { avanceStyles } from '@/app/styles/admin/avanceStyles';
 import { SafeArea } from '@/components/ui/safe-area';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
+import { avanceStyles } from '@/styles/admin/avanceStyles';
 import { useLocalSearchParams } from 'expo-router';
 import { collection, doc, getDoc, onSnapshot, query, Timestamp, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';

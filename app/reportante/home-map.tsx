@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { homeMapStyles } from '../styles/reportante/home-mapStyles';
+import { homeMapStyles } from '../../styles/reportante/home-mapStyles';
 
 interface Report {
   id: string;

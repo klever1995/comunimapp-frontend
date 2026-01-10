@@ -1,7 +1,7 @@
 // app/admin/users.tsx - VERSIÓN CON TIEMPO REAL
-import { userStyles } from '@/app/styles/admin/userStyles';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
+import { userStyles } from '@/styles/admin/userStyles';
 import { router } from 'expo-router';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';

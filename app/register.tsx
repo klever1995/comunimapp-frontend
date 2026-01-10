@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { registerStyles } from './styles/registerStyles';
+import { registerStyles } from '../styles/registerStyles';
 
 export default function RegisterScreen() {
   const [nombreCompleto, setNombreCompleto] = useState('');

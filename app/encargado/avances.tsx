@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { avanceStyles } from '../styles/encargado/avanceStyles';
+import { avanceStyles } from '../../styles/encargado/avanceStyles';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 

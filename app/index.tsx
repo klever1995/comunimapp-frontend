@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { loginStyles } from './styles/index';
+import { loginStyles } from '../styles/index';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');

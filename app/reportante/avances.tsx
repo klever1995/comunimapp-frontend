@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { avanceStyles } from '../styles/reportante/avanceStyles';
+import { avanceStyles } from '../../styles/reportante/avanceStyles';
 
 // Tipos basados en Firestore
 type CaseUpdate = {

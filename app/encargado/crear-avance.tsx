@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { crearAvanceStyles } from '../styles/encargado/crear-avanceStyles';
+import { crearAvanceStyles } from '../../styles/encargado/crear-avanceStyles';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 

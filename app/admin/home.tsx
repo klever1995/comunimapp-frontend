@@ -1,6 +1,6 @@
 // app/admin/home.tsx
-import { homeStyles } from '@/app/styles/admin/homeStyles';
 import { SafeArea } from '@/components/ui/safe-area';
+import { homeStyles } from '@/styles/admin/homeStyles';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { Image, Text } from 'react-native';
