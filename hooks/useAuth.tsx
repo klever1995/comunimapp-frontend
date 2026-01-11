@@ -130,46 +130,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // 2. OBTENER Y REGISTRAR TOKEN FCM
   // ==============================================
   const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
-    Alert.alert('Debug', 'registerFCMToken ejecutado');
-    try {
-      const hasPermission = await requestNotificationPermissions();
-      if (!hasPermission) return;
+  Alert.alert('Debug', 'registerFCMToken ejecutado');
+  try {
+    const hasPermission = await requestNotificationPermissions();
+    Alert.alert('Debug 2', `Permisos: ${hasPermission}`);
+    if (!hasPermission) return;
 
-      const expoPushToken = await Notifications.getExpoPushTokenAsync({
-        projectId: process.env.EXPO_PUBLIC_PROJECT_ID, // Asegúrate de tener esta variable en tu .env
-      });
+    const expoPushToken = await Notifications.getExpoPushTokenAsync({
+      projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+    });
+    Alert.alert('Debug 3', `Token: ${expoPushToken?.data || 'null'}`);
 
-      const deviceName = Device.deviceName || 'Desconocido';
-      const deviceModel = Device.modelId || 'Desconocido';
-      const osVersion = Device.osVersion || 'Desconocido';
+    const deviceName = Device.deviceName || 'Desconocido';
+    const deviceModel = Device.modelId || 'Desconocido';
+    const osVersion = Device.osVersion || 'Desconocido';
+    Alert.alert('Debug 4', `Preparando fetch a ${API_URL}/auth/register-fcm-token`);
 
-      const response = await fetch(`${API_URL}/auth/register-fcm-token`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          fcm_token: expoPushToken.data,
-          device_type: Platform.OS,
-          device_name: deviceName,
-          device_model: deviceModel,
-          os_version: osVersion,
-        }),
-      });
+    const response = await fetch(`${API_URL}/auth/register-fcm-token`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        fcm_token: expoPushToken.data,
+        device_type: Platform.OS,
+        device_name: deviceName,
+        device_model: deviceModel,
+        os_version: osVersion,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: No se pudo registrar el token FCM`);
-      }
-
-      console.log('✅ Token FCM registrado exitosamente');
-    } catch (error: any) {
-      console.warn('⚠️ Error registrando token FCM:', error.message || error);
-      // No mostramos alerta al usuario para no interrumpir el flujo principal
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: No se pudo registrar el token FCM`);
     }
-  };
+
+    console.log('✅ Token FCM registrado exitosamente');
+    Alert.alert('Debug 5', 'Token registrado exitosamente en backend');
+  } catch (error: any) {
+    console.warn('⚠️ Error registrando token FCM:', error.message || error);
+    Alert.alert('Error catch', error.message || 'Error desconocido');
+  }
+};
 
   // ==============================================
   // 3. REGISTRAR TOKEN AL CARGAR LA APP (SI HAY USUARIO)
