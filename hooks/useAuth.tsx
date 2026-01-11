@@ -130,6 +130,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // 2. OBTENER Y REGISTRAR TOKEN FCM
   // ==============================================
   const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
+    Alert.alert('Debug', 'registerFCMToken ejecutado');
     try {
       const hasPermission = await requestNotificationPermissions();
       if (!hasPermission) return;
