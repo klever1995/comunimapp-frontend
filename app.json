@@ -22,7 +22,10 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.klever1995.ComunimappMobile",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyCrdpmS3YMBZTJIcf88sr1GxYnj5yjpHmc"
@@ -56,6 +59,7 @@
     "extra": {
       "router": {},
       "eas": {
+        "projectId": "f2bb0ebb-8c60-4496-971f-2a0925d6c806"
       }
     }
   }
