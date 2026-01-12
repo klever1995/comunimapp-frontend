@@ -2,11 +2,13 @@
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { homeMapStyles } from '@/styles/admin/home-mapStyles';
+import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Text,
   TouchableOpacity,
@@ -32,7 +34,7 @@ interface Report {
 }
 
 export default function AdminHomeMapScreen({ navigation }: any) {
-  const { authState: { user } } = useAuth();
+  const { authState: { user }, logout } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -112,6 +114,37 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     return () => unsubscribe();
   }, [user?.id, firebaseReady]);
 
+  // Función para manejar el logout
+  const handleLogout = async () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Cerrar sesión en Firebase
+              await firebaseAuth.signOut();
+              // Limpiar autenticación de tu contexto
+              await logout();
+              // Navegar a la pantalla de login (Expo Router)
+              router.replace('/');
+            } catch (error) {
+              console.error('Error al cerrar sesión:', error);
+              Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'alta': return '#ef4444';
@@ -148,7 +181,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
 
   return (
     <View style={homeMapStyles.container}>
-      {/* Header */}
+      {/* Header CON BOTÓN DE LOGOUT */}
       <View style={homeMapStyles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={homeMapStyles.headerTitle}>Todos los Reportes</Text>
@@ -158,17 +191,34 @@ export default function AdminHomeMapScreen({ navigation }: any) {
             </View>
           )}
         </View>
-        <TouchableOpacity
-          style={homeMapStyles.notificationButton}
-          onPress={() => navigation.navigate('Notifications')}
-        >
-          <View style={homeMapStyles.notificationBadge} />
-          <Image
-            source={require('@/assets/images/notifications.png')}
-            style={homeMapStyles.notificationIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        
+        <View style={homeMapStyles.headerRightContainer}>
+          {/* Botón de Notificaciones */}
+          <TouchableOpacity
+            style={homeMapStyles.notificationButton}
+            onPress={() => router.push('/notification')}
+          >
+            <View style={homeMapStyles.notificationBadge} />
+            <Image
+              source={require('@/assets/images/notifications.png')}
+              style={homeMapStyles.notificationIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          
+          {/* Botón de Logout */}
+          <TouchableOpacity
+            style={homeMapStyles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Image
+              source={require('@/assets/images/logout.png')}
+              style={homeMapStyles.logoutIcon}
+              resizeMode="contain"
+            />
+            <Text style={homeMapStyles.logoutText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Contenido del mapa */}

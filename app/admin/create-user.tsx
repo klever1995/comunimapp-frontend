@@ -272,7 +272,7 @@ export default function AdminCreateUserScreen() {
                 <Text style={createUserStyles.inputLabel}>Organización *</Text>
                 <View style={createUserStyles.inputWithIconContainer}>
                   <Image
-                    source={require('@/assets/images/nombre.png')}
+                    source={require('@/assets/images/organization.png')}
                     style={createUserStyles.leftIcon}
                     resizeMode="contain"
                   />
@@ -292,7 +292,7 @@ export default function AdminCreateUserScreen() {
                 <Text style={createUserStyles.inputLabel}>Teléfono</Text>
                 <View style={createUserStyles.inputWithIconContainer}>
                   <Image
-                    source={require('@/assets/images/nombre.png')}
+                    source={require('@/assets/images/phone.png')}
                     style={createUserStyles.leftIcon}
                     resizeMode="contain"
                   />
@@ -434,7 +434,7 @@ export default function AdminCreateUserScreen() {
                 <View style={createUserStyles.createButtonContent}>
                   <Text style={createUserStyles.createButtonText}>Crear Usuario</Text>
                   <Image
-                    source={require('@/assets/images/nombre.png')}
+                    source={require('@/assets/images/agregar.png')}
                     style={createUserStyles.createIcon}
                     resizeMode="contain"
                   />

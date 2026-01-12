@@ -88,63 +88,58 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const STORAGE_KEY = '@Comunimapp_auth';
 
-  // ==============================================
-  // 1. SOLICITAR PERMISOS DE NOTIFICACIONES
-  // ==============================================
-  const requestNotificationPermissions = async (): Promise<boolean> => {
-    if (!Device.isDevice) {
-      console.warn('Debes usar un dispositivo físico para notificaciones push');
-      return false;
-    }
+// ==============================================
+// 1. SOLICITAR PERMISOS DE NOTIFICACIONES
+// ==============================================
+const requestNotificationPermissions = async (): Promise<boolean> => {
+  if (!Device.isDevice) {
+    return false;
+  }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
 
-    if (finalStatus !== 'granted') {
-      Alert.alert(
-        'Permisos necesarios',
-        'Debes habilitar las notificaciones para recibir alertas importantes.',
-        [{ text: 'OK' }]
-      );
-      return false;
-    }
+  if (finalStatus !== 'granted') {
+    Alert.alert(
+      'Permisos necesarios',
+      'Debes habilitar las notificaciones para recibir alertas importantes.',
+      [{ text: 'OK' }]
+    );
+    return false;
+  }
 
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
 
-    return true;
-  };
+  return true;
+};
 
-  // ==============================================
-  // 2. OBTENER Y REGISTRAR TOKEN FCM
-  // ==============================================
-  const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
-  Alert.alert('Debug', 'registerFCMToken ejecutado');
+// ==============================================
+// 2. OBTENER Y REGISTRAR TOKEN FCM
+// ==============================================
+const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
   try {
     const hasPermission = await requestNotificationPermissions();
-    Alert.alert('Debug 2', `Permisos: ${hasPermission}`);
     if (!hasPermission) return;
 
     const expoPushToken = await Notifications.getExpoPushTokenAsync({
       projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
     });
-    Alert.alert('Debug 3', `Token: ${expoPushToken?.data || 'null'}`);
 
     const deviceName = Device.deviceName || 'Desconocido';
     const deviceModel = Device.modelId || 'Desconocido';
     const osVersion = Device.osVersion || 'Desconocido';
-    Alert.alert('Debug 4', `Preparando fetch a ${API_URL}/auth/register-fcm-token`);
 
     const response = await fetch(`${API_URL}/auth/register-fcm-token`, {
       method: 'POST',
@@ -166,12 +161,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (!response.ok) {
       throw new Error(`Error ${response.status}: No se pudo registrar el token FCM`);
     }
-
-    console.log('✅ Token FCM registrado exitosamente');
-    Alert.alert('Debug 5', 'Token registrado exitosamente en backend');
   } catch (error: any) {
-    console.warn('⚠️ Error registrando token FCM:', error.message || error);
-    Alert.alert('Error catch', error.message || 'Error desconocido');
+    // Error silencioso - no interrumpir flujo principal
   }
 };
 

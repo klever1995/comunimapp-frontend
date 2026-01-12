@@ -77,7 +77,7 @@ export const createUserStyles = StyleSheet.create({
   roleButton: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 10,

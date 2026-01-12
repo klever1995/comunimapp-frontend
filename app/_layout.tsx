@@ -49,6 +49,8 @@ export default function RootLayout() {
             options={{ presentation: 'modal', title: 'Modal' }}
           />
           <Stack.Screen name="register" options={{ headerShown: false }} />
+          <Stack.Screen name="notification" options={{ headerShown: false }} />
+
           <Stack.Screen name="admin/home" options={{ headerShown: false }} />
           <Stack.Screen name="admin/home-map" options={{ headerShown: false }} />
           <Stack.Screen name="admin/report" options={{ headerShown: false }} />
