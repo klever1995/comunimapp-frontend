@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
 
 interface Report {
   id: string;
@@ -209,25 +209,40 @@ export default function AdminHomeMapScreen({ navigation }: any) {
             </View>
           </View>
         ) : (
-          <MapView
-            style={homeMapStyles.mapContainer}
-            provider={PROVIDER_GOOGLE}
-            region={mapRegion}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {reports.map((report) => (
-              <Marker
-                key={report.id}
-                coordinate={{
-                  latitude: report.location.latitude,
-                  longitude: report.location.longitude,
-                }}
-                pinColor={getPriorityColor(report.priority)}
-                onPress={() => setSelectedReport(report)}
-              />
-            ))}
-          </MapView>
+            <MapView
+              style={homeMapStyles.mapContainer}
+              provider={PROVIDER_GOOGLE}
+              region={mapRegion}
+              showsUserLocation
+              showsMyLocationButton
+            >
+              {/* 1. Capa de Calor: Solo aparece si showHeatmap es true */}
+              {showHeatmap && reports.length > 0 && (
+                <Heatmap
+                  points={heatmapPoints}
+                  radius={50}
+                  opacity={0.8}
+                  gradient={{
+                    colors: ['#34d399', '#fbbf24', '#ef4444'], // Verde -> Amarillo -> Rojo
+                    startPoints: [0.2, 0.5, 0.8],
+                    colorMapSize: 2000,
+                  }}
+                />
+              )}
+
+              {/* 2. Marcadores: Solo aparecen si showHeatmap es false */}
+              {!showHeatmap && reports.map((report) => (
+                <Marker
+                  key={report.id}
+                  coordinate={{
+                    latitude: report.location.latitude,
+                    longitude: report.location.longitude,
+                  }}
+                  pinColor={getPriorityColor(report.priority)}
+                  onPress={() => setSelectedReport(report)}
+                />
+              ))}
+            </MapView>
         )}
 
         {/* Leyenda */}
