@@ -250,6 +250,42 @@ export const homeMapStyles = StyleSheet.create({
     fontSize: 12,
     color: '#FFFFFF',
   },
+
+    heatmapToggleButton: {
+    position: 'absolute',
+    bottom: 100, // Ubicado justo encima del botón de ver detalles
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    borderWidth: 2,
+    borderColor: '#2563EB',
+  },
+  heatmapToggleButtonActive: {
+    backgroundColor: '#2563EB', // Color cuando el mapa de calor está encendido
+  },
+  toggleLabel: {
+    position: 'absolute',
+    bottom: 85,
+    right: 20,
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#1e293b',
+    textAlign: 'center',
+    width: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 4,
+    paddingVertical: 2,
+  },
+  
 });
 
 export default homeMapStyles;
