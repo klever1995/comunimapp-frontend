@@ -44,6 +44,17 @@ export default function AdminHomeMapScreen({ navigation }: any) {
   });
   const [firebaseReady, setFirebaseReady] = useState(false);
 
+  // 1. Estado para controlar si se muestra el mapa de calor
+  const [showHeatmap, setShowHeatmap] = useState(false);
+
+  // 2. Transformar los reportes en puntos válidos para el Heatmap
+  // Asignamos un "weight" (peso) mayor a los reportes de prioridad alta
+  const heatmapPoints = reports.map(report => ({
+    latitude: report.location.latitude,
+    longitude: report.location.longitude,
+    weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
+  }));
+
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
     const unsubscribeAuth = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
