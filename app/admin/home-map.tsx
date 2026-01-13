@@ -4,7 +4,7 @@ import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { homeMapStyles } from '@/styles/admin/home-mapStyles';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -49,11 +49,16 @@ export default function AdminHomeMapScreen({ navigation }: any) {
 
   // 2. Transformar los reportes en puntos válidos para el Heatmap
   // Asignamos un "weight" (peso) mayor a los reportes de prioridad alta
-  const heatmapPoints = reports.map(report => ({
+
+
+
+  const heatmapPoints = useMemo(() => {
+  return reports.map(report => ({
     latitude: report.location.latitude,
     longitude: report.location.longitude,
     weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
   }));
+}, [reports]);
 
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
