@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
 import { homeMapStyles } from '../../styles/reportante/home-mapStyles';
 
 interface Report {
@@ -52,7 +52,7 @@ export default function HomeMapScreen({ navigation }: any) {
       weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
     }));
   }, [reports]);
-  
+
 
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
@@ -202,26 +202,41 @@ export default function HomeMapScreen({ navigation }: any) {
             </View>
           </View>
         ) : (
-          <MapView
-            style={homeMapStyles.mapContainer}
-            provider={PROVIDER_GOOGLE}
-            region={mapRegion}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {reports.map((report) => (
-              <Marker
-                key={report.id}
-                coordinate={{
-                  latitude: report.location.latitude,
-                  longitude: report.location.longitude,
-                }}
-                pinColor={getPriorityColor(report.priority)}
-                onPress={() => setSelectedReport(report)}
-              />
-            ))}
-          </MapView>
-        )}
+            <MapView
+              style={homeMapStyles.mapContainer}
+              provider={PROVIDER_GOOGLE}
+              region={mapRegion}
+              showsUserLocation
+              showsMyLocationButton
+            >
+              {/* 1. Capa de Calor: Se muestra solo si showHeatmap es true */}
+              {showHeatmap && reports.length > 0 && (
+                <Heatmap
+                  points={heatmapPoints}
+                  radius={50}
+                  opacity={0.8}
+                  gradient={{
+                    colors: ['#34d399', '#fbbf24', '#ef4444'], // Verde -> Amarillo -> Rojo
+                    startPoints: [0.2, 0.5, 0.8],
+                    colorMapSize: 2000,
+                  }}
+                />
+              )}
+
+              {/* 2. Marcadores: Se muestran solo si showHeatmap es false */}
+              {!showHeatmap && reports.map((report) => (
+                <Marker
+                  key={report.id}
+                  coordinate={{
+                    latitude: report.location.latitude,
+                    longitude: report.location.longitude,
+                  }}
+                  pinColor={getPriorityColor(report.priority)}
+                  onPress={() => setSelectedReport(report)}
+                />
+              ))}
+            </MapView>
+                    )}
 
         {/* Leyenda */}
         <View style={homeMapStyles.legendContainer}>
@@ -241,6 +256,29 @@ export default function HomeMapScreen({ navigation }: any) {
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#22c55e' }]} />
             <Text style={homeMapStyles.legendText}>Baja prioridad</Text>
           </View>
+
+          {/* 👉 PEGA EL CÓDIGO DEL BOTÓN AQUÍ: */}
+        <TouchableOpacity
+          style={[
+            homeMapStyles.heatmapToggleButton, 
+            showHeatmap && homeMapStyles.heatmapToggleButtonActive
+          ]}
+          onPress={() => setShowHeatmap(!showHeatmap)}
+        >
+          <Image
+            source={require('@/assets/images/map-icon.png')}
+            style={[
+              { width: 24, height: 24 },
+              { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
+            ]}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        <Text style={homeMapStyles.toggleLabel}>
+          {showHeatmap ? 'PUNTOS' : 'CALOR'}
+        </Text>
+        
         </View>
       </View>
 
@@ -297,5 +335,7 @@ export default function HomeMapScreen({ navigation }: any) {
         </View>
       )}
     </View>
+
+    
   );
 }
