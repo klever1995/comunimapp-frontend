@@ -250,6 +250,35 @@ export const homeMapStyles = StyleSheet.create({
     fontSize: 12,
     color: '#FFFFFF',
   },
+  heatmapToggleButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#2563EB',
+  },
+  heatmapToggleButtonActive: {
+    backgroundColor: '#2563EB',
+  },
+  toggleLabel: {
+    position: 'absolute',
+    bottom: 85,
+    right: 20,
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    textAlign: 'center',
+    width: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 4,
+  },
 });
 
 export default homeMapStyles;
