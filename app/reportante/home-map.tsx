@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase'; // IMPORT FIREBASE AUTH
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -40,6 +40,19 @@ export default function HomeMapScreen({ navigation }: any) {
     longitudeDelta: 0.05,
   });
   const [firebaseReady, setFirebaseReady] = useState(false);
+
+  // 👉 PEGA EL CÓDIGO AQUÍ:
+  const [showHeatmap, setShowHeatmap] = useState(false);
+
+  const heatmapPoints = useMemo(() => {
+    return reports.map(report => ({
+      latitude: report.location.latitude,
+      longitude: report.location.longitude,
+      // Peso según prioridad: alta=3, media=2, baja=1
+      weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
+    }));
+  }, [reports]);
+  
 
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
