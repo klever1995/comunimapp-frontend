@@ -1,18 +1,21 @@
 // app/reportante/home-map.tsx
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase'; // IMPORT FIREBASE AUTH
+import { homeMapStyles } from '../../styles/admin/home-mapStyles';
+import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from 'react-native'
 import MapView, { Marker, Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
-import { homeMapStyles } from '../../styles/reportante/home-mapStyles';
+
 
 interface Report {
   id: string;
