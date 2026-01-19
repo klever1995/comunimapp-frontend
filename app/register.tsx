@@ -39,9 +39,10 @@ export default function RegisterScreen() {
       return;
     }
 
-    // Validación simple de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Esta nueva regex acepta dominios con varios puntos como .edu.ec
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+(\.[^\s@]+)*$/;
+
+    if (!emailRegex.test(email.trim())) {
       alert('Por favor ingresa un correo electrónico válido');
       return;
     }

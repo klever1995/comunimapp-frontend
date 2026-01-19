@@ -92,19 +92,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 // 1. SOLICITAR PERMISOS DE NOTIFICACIONES
 // ==============================================
 const requestNotificationPermissions = async (): Promise<boolean> => {
+  console.log('[DEBUG PERMISOS] Función llamada, verificando dispositivo...'); // AÑADE
   if (!Device.isDevice) {
+    console.log('[DEBUG PERMISOS] No es un dispositivo físico, retornando false.'); // AÑADE
     return false;
   }
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  console.log('[DEBUG PERMISOS] Estado actual de permisos:', existingStatus); // AÑADE
   let finalStatus = existingStatus;
 
   if (existingStatus !== 'granted') {
+    console.log('[DEBUG PERMISOS] Solicitando permisos...'); // AÑADE
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
+    console.log('[DEBUG PERMISOS] Nuevo estado después de solicitar:', finalStatus); // AÑADE
   }
 
   if (finalStatus !== 'granted') {
+    console.log('[DEBUG PERMISOS] Permisos NO otorgados, mostrando alerta.'); // AÑADE
     Alert.alert(
       'Permisos necesarios',
       'Debes habilitar las notificaciones para recibir alertas importantes.',
@@ -113,6 +119,7 @@ const requestNotificationPermissions = async (): Promise<boolean> => {
     return false;
   }
 
+  console.log('[DEBUG PERMISOS] Permisos OTORGADOS. Configurando canal Android...'); // AÑADE
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
@@ -122,24 +129,52 @@ const requestNotificationPermissions = async (): Promise<boolean> => {
     });
   }
 
+  console.log('[DEBUG PERMISOS] Retornando TRUE.'); // AÑADE
   return true;
 };
 
 // ==============================================
-// 2. OBTENER Y REGISTRAR TOKEN FCM
+// 2. OBTENER Y REGISTRAR TOKEN FCM (CON DEBUG)
 // ==============================================
 const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
+  console.log('[DEBUG registerFCMToken] INICIO. UserId:', userId);
   try {
     const hasPermission = await requestNotificationPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      console.log('[DEBUG registerFCMToken] Permisos denegados. Saliendo.');
+      return;
+    }
 
-    const expoPushToken = await Notifications.getExpoPushTokenAsync({
-      projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-    });
+    console.log('[DEBUG registerFCMToken] Permisos OK. Obteniendo token...');
+    let expoPushToken;
+    let fcmToken;
+    try {
+      // Intentamos obtener el token nativo de Google (FCM) directamente
+      // Este es el que funcionará con tu archivo JSON en Python
+      const deviceToken = await Notifications.getDevicePushTokenAsync();
+      fcmToken = deviceToken.data;
+      
+      console.log('[LOG VICTORIA] TOKEN NATIVO DE GOOGLE OBTENIDO:', fcmToken);
+    } catch (googleError) {
+      console.error('[ERROR] No se pudo obtener el token de Google:', googleError);
+      
+      // Si falla el de Google, intentamos el de Expo como plan B
+      try {
+        const expoToken = await Notifications.getExpoPushTokenAsync({
+          projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+        });
+        fcmToken = expoToken.data;
+      } catch (expoError) {
+        console.error('[ERROR CRÍTICO] Fallaron ambos métodos de token');
+        return;
+      }
+    }
 
     const deviceName = Device.deviceName || 'Desconocido';
     const deviceModel = Device.modelId || 'Desconocido';
     const osVersion = Device.osVersion || 'Desconocido';
+
+    console.log('[DEBUG registerFCMToken] Enviando token al backend...');
 
     const response = await fetch(`${API_URL}/auth/register-fcm-token`, {
       method: 'POST',
@@ -150,7 +185,7 @@ const registerFCMToken = async (accessToken: string, userId: string): Promise<vo
       },
       body: JSON.stringify({
         user_id: userId,
-        fcm_token: expoPushToken.data,
+        fcm_token: fcmToken,
         device_type: Platform.OS,
         device_name: deviceName,
         device_model: deviceModel,
@@ -158,11 +193,23 @@ const registerFCMToken = async (accessToken: string, userId: string): Promise<vo
       }),
     });
 
+    const responseText = await response.text();
+    console.log('[DEBUG registerFCMToken] Respuesta backend:', responseText);
+
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: No se pudo registrar el token FCM`);
+      let errorDetail = responseText;
+      try {
+        const errorJson = JSON.parse(responseText);
+        errorDetail = errorJson.detail || errorJson.message || responseText;
+      } catch (e) {}
+      console.error(`[ERROR registerFCMToken] Backend: ${response.status}`, errorDetail);
+      throw new Error(`Error ${response.status}: ${errorDetail}`);
     }
-  } catch (error: any) {
-    // Error silencioso - no interrumpir flujo principal
+
+    console.log('[DEBUG registerFCMToken] ÉXITO: Token guardado para', userId);
+
+  } catch (outerError: any) {
+    console.error('[ERROR GENERAL en registerFCMToken]:', outerError.message);
   }
 };
 
@@ -271,7 +318,9 @@ const registerFCMToken = async (accessToken: string, userId: string): Promise<vo
       // ==========================
       // REGISTRAR TOKEN FCM DESPUÉS DE LOGIN
       // ==========================
+      console.log('[DEBUG LOGIN] Punto 1: Antes de llamar a registerFCMToken');
       await registerFCMToken(data.access_token, data.user.id);
+      console.log('[DEBUG LOGIN] Punto 2: Después de llamar a registerFCMToken');
 
       await saveAuthData(data.user, data.access_token);
       return data.user;
