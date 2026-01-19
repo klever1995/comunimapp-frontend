@@ -1,4 +1,3 @@
-// app/admin/home-map.tsx
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { homeMapStyles } from '@/styles/admin/home-mapStyles';
@@ -36,32 +35,25 @@ export default function AdminHomeMapScreen({ navigation }: any) {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [firebaseReady, setFirebaseReady] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: -0.22985,
     longitude: -78.52495,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-  const [firebaseReady, setFirebaseReady] = useState(false);
 
-  // 1. Estado para controlar si se muestra el mapa de calor
-  const [showHeatmap, setShowHeatmap] = useState(false);
-
-  // 2. Transformar los reportes en puntos válidos para el Heatmap
-  // Asignamos un "weight" (peso) mayor a los reportes de prioridad alta
-
-
-
+  // Cálculo optimizado de puntos para el mapa de calor
   const heatmapPoints = useMemo(() => {
-  return reports.map(report => ({
-    latitude: report.location.latitude,
-    longitude: report.location.longitude,
-    weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
-  }));
-}, [reports]);
+    return reports.map(report => ({
+      latitude: report.location.latitude,
+      longitude: report.location.longitude,
+      weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
+    }));
+  }, [reports]);
 
   useEffect(() => {
-    // Esperar a que Firebase Auth esté listo
     const unsubscribeAuth = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
       if (firebaseUser) {
         setFirebaseReady(true);
@@ -70,7 +62,6 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         setReports([]);
       }
     });
-
     return () => unsubscribeAuth();
   }, []);
 
@@ -78,25 +69,16 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     if (!user?.id || !firebaseReady) return;
 
     setLoading(true);
-
-    // IMPORTANTE: Admin ve TODOS los reportes sin filtro
     const q = query(collection(db, 'reports'));
 
-    // Escuchar cambios en tiempo real
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const reportsData: Report[] = [];
-
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         reportsData.push({
           id: doc.id,
           description: data.description || '',
-          location: data.location || { 
-            latitude: 0, 
-            longitude: 0, 
-            address: '', 
-            city: '' 
-          },
+          location: data.location || { latitude: 0, longitude: 0, address: '', city: '' },
           priority: data.priority || 'media',
           status: data.status || 'pendiente',
           created_at: data.created_at?.toDate?.()?.toISOString() || new Date().toISOString(),
@@ -108,7 +90,6 @@ export default function AdminHomeMapScreen({ navigation }: any) {
 
       setReports(reportsData);
 
-      // Actualizar región del mapa si hay reportes
       if (reportsData.length > 0 && reportsData[0].location) {
         setMapRegion({
           latitude: reportsData[0].location.latitude,
@@ -117,14 +98,12 @@ export default function AdminHomeMapScreen({ navigation }: any) {
           longitudeDelta: 0.05,
         });
       }
-
       setLoading(false);
     }, (error) => {
       console.error('Error escuchando reportes:', error);
       setLoading(false);
     });
 
-    // Limpiar listener al desmontar
     return () => unsubscribe();
   }, [user?.id, firebaseReady]);
 
@@ -157,14 +136,12 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     });
   };
 
-  // Navegar a la pantalla de detalles del reporte
   const handleViewReportDetails = (reportId: string) => {
     navigation.navigate('ReportDetails', { reportId });
   };
 
   return (
     <View style={homeMapStyles.container}>
-      {/* Header */}
       <View style={homeMapStyles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={homeMapStyles.headerTitle}>Todos los Reportes</Text>
@@ -187,14 +164,11 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         </TouchableOpacity>
       </View>
 
-      {/* Contenido del mapa */}
       <View style={homeMapStyles.contentContainer}>
         {loading ? (
           <View style={homeMapStyles.loadingContainer}>
             <ActivityIndicator size="large" color="#2563EB" />
-            <Text style={{ marginTop: 10, color: '#64748b' }}>
-              Cargando todos los reportes...
-            </Text>
+            <Text style={{ marginTop: 10, color: '#64748b' }}>Cargando todos los reportes...</Text>
           </View>
         ) : reports.length === 0 ? (
           <View style={homeMapStyles.placeholderContainer}>
@@ -204,39 +178,30 @@ export default function AdminHomeMapScreen({ navigation }: any) {
                 style={homeMapStyles.mapIcon}
                 resizeMode="contain"
               />
-              <Text style={homeMapStyles.mapPlaceholderText}>
-                No hay reportes registrados
-                {'\n'}
-                <Text style={{ fontSize: 14, color: '#94a3b8' }}>
-                  Los reportes creados aparecerán aquí automáticamente
-                </Text>
-              </Text>
+              <Text style={homeMapStyles.mapPlaceholderText}>No hay reportes registrados</Text>
             </View>
           </View>
         ) : (
-            <MapView
-              style={homeMapStyles.mapContainer}
-              provider={PROVIDER_GOOGLE}
-              region={mapRegion}
-              showsUserLocation
-              showsMyLocationButton
-            >
-              {/* 1. Capa de Calor: Solo aparece si showHeatmap es true */}
-              {showHeatmap && reports.length > 0 && (
-                <Heatmap
-                  points={heatmapPoints}
-                  radius={50}
-                  opacity={0.8}
-                  gradient={{
-                    colors: ['#34d399', '#fbbf24', '#ef4444'], // Verde -> Amarillo -> Rojo
-                    startPoints: [0.2, 0.5, 0.8],
-                    colorMapSize: 2000,
-                  }}
-                />
-              )}
-
-              {/* 2. Marcadores: Solo aparecen si showHeatmap es false */}
-              {!showHeatmap && reports.map((report) => (
+          <MapView
+            style={homeMapStyles.mapContainer}
+            provider={PROVIDER_GOOGLE}
+            region={mapRegion}
+            showsUserLocation
+            showsMyLocationButton
+          >
+            {showHeatmap ? (
+              <Heatmap
+                points={heatmapPoints}
+                radius={50}
+                opacity={0.8}
+                gradient={{
+                  colors: ['#34d399', '#fbbf24', '#ef4444'],
+                  startPoints: [0.2, 0.5, 0.8],
+                  colorMapSize: 2000,
+                }}
+              />
+            ) : (
+              reports.map((report) => (
                 <Marker
                   key={report.id}
                   coordinate={{
@@ -246,32 +211,47 @@ export default function AdminHomeMapScreen({ navigation }: any) {
                   pinColor={getPriorityColor(report.priority)}
                   onPress={() => setSelectedReport(report)}
                 />
-              ))}
-            </MapView>
+              ))
+            )}
+          </MapView>
         )}
 
-        {/* Leyenda */}
         <View style={homeMapStyles.legendContainer}>
           <Text style={homeMapStyles.legendTitle}>Prioridades</Text>
-
           <View style={homeMapStyles.legendItem}>
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#ef4444' }]} />
             <Text style={homeMapStyles.legendText}>Alta prioridad</Text>
           </View>
-
           <View style={homeMapStyles.legendItem}>
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#f97316' }]} />
             <Text style={homeMapStyles.legendText}>Media prioridad</Text>
           </View>
-
           <View style={homeMapStyles.legendItem}>
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#22c55e' }]} />
             <Text style={homeMapStyles.legendText}>Baja prioridad</Text>
           </View>
         </View>
 
-        {/* Botón flotante para ver detalles (si hay reporte seleccionado) */}
-        {selectedReport && (
+        {/* Botón de Alternancia de Mapa de Calor */}
+        <TouchableOpacity
+          style={[
+            homeMapStyles.heatmapToggleButton, 
+            showHeatmap && homeMapStyles.heatmapToggleButtonActive
+          ]}
+          onPress={() => setShowHeatmap(!showHeatmap)}
+        >
+          <Image
+            source={require('@/assets/images/map-icon.png')}
+            style={[
+              { width: 24, height: 24 },
+              { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
+            ]}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <Text style={homeMapStyles.toggleLabel}>{showHeatmap ? 'PUNTOS' : 'CALOR'}</Text>
+
+        {selectedReport && !showHeatmap && (
           <TouchableOpacity
             style={homeMapStyles.floatingReportButton}
             onPress={() => handleViewReportDetails(selectedReport.id)}
@@ -285,7 +265,6 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         )}
       </View>
 
-      {/* Modal detalle del reporte */}
       {selectedReport && (
         <View style={homeMapStyles.reportDetailModal}>
           <View style={homeMapStyles.reportDetailHeader}>
@@ -296,63 +275,20 @@ export default function AdminHomeMapScreen({ navigation }: any) {
               <Text style={homeMapStyles.reportDetailClose}>✕</Text>
             </TouchableOpacity>
           </View>
-
           <View style={homeMapStyles.reportDetailContent}>
-            <Text style={homeMapStyles.reportDetailDescription}>
-              {selectedReport.description}
-            </Text>
-
+            <Text style={homeMapStyles.reportDetailDescription}>{selectedReport.description}</Text>
             <View style={homeMapStyles.reportDetailInfo}>
               <Text style={homeMapStyles.reportDetailLabel}>Ubicación:</Text>
               <Text style={homeMapStyles.reportDetailText}>
-                {selectedReport.location.address || 'Sin dirección'}
-                {selectedReport.location.city ? `, ${selectedReport.location.city}` : ''}
+                {selectedReport.location.address || 'Sin dirección'}{selectedReport.location.city ? `, ${selectedReport.location.city}` : ''}
               </Text>
             </View>
-
             <View style={homeMapStyles.reportDetailInfo}>
               <Text style={homeMapStyles.reportDetailLabel}>Prioridad:</Text>
-              <Text
-                style={[
-                  homeMapStyles.reportDetailText,
-                  { color: getPriorityColor(selectedReport.priority), fontWeight: 'bold' },
-                ]}
-              >
+              <Text style={[homeMapStyles.reportDetailText, { color: getPriorityColor(selectedReport.priority), fontWeight: 'bold' }]}>
                 {selectedReport.priority.toUpperCase()}
               </Text>
             </View>
-
-            <View style={homeMapStyles.reportDetailInfo}>
-              <Text style={homeMapStyles.reportDetailLabel}>Estado:</Text>
-              <Text style={homeMapStyles.reportDetailText}>
-                {selectedReport.status.replace('_', ' ').toUpperCase()}
-              </Text>
-            </View>
-
-            <View style={homeMapStyles.reportDetailInfo}>
-              <Text style={homeMapStyles.reportDetailLabel}>Fecha:</Text>
-              <Text style={homeMapStyles.reportDetailText}>
-                {formatDate(selectedReport.created_at)}
-              </Text>
-            </View>
-
-            {selectedReport.assigned_to && (
-              <View style={homeMapStyles.reportDetailInfo}>
-                <Text style={homeMapStyles.reportDetailLabel}>Asignado a:</Text>
-                <Text style={homeMapStyles.reportDetailText}>
-                  {selectedReport.assigned_to.substring(0, 8)}...
-                </Text>
-              </View>
-            )}
-
-            {selectedReport.reporter_uid && (
-              <View style={homeMapStyles.reportDetailInfo}>
-                <Text style={homeMapStyles.reportDetailLabel}>Reportante:</Text>
-                <Text style={homeMapStyles.reportDetailText}>
-                  {selectedReport.is_anonymous_public ? 'Anónimo' : selectedReport.reporter_uid.substring(0, 8) + '...'}
-                </Text>
-              </View>
-            )}
           </View>
         </View>
       )}
