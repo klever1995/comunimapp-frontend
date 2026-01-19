@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -32,6 +32,8 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  // Estado para alternar entre vista de marcadores y calor
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: -0.22985,
     longitude: -78.52495,
@@ -39,6 +41,16 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
     longitudeDelta: 0.05,
   });
   const [firebaseReady, setFirebaseReady] = useState(false);
+  
+  // Transformar reportes en puntos de calor con peso por prioridad
+  const heatmapPoints = useMemo(() => {
+    return reports.map(report => ({
+      latitude: report.location.latitude,
+      longitude: report.location.longitude,
+      // Prioridad alta pesa más en el mapa de calor
+      weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
+    }));
+  }, [reports]);
 
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
