@@ -10,8 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
 import { homeMapStyles } from '../../styles/encargado/home-mapStyles';
+
 
 interface Report {
   id: string;
@@ -199,14 +200,30 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
             </View>
           </View>
         ) : (
-          <MapView
-            style={homeMapStyles.mapContainer}
-            provider={PROVIDER_GOOGLE}
-            region={mapRegion}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {reports.map((report) => (
+
+          {/* Leyenda */}
+        <MapView
+          style={homeMapStyles.mapContainer}
+          provider={PROVIDER_GOOGLE}
+          region={mapRegion}
+          showsUserLocation
+          showsMyLocationButton
+        >
+          {/* Capa de Calor condicional */}
+          {showHeatmap && reports.length > 0 ? (
+            <Heatmap
+              points={heatmapPoints}
+              radius={50}
+              opacity={0.8}
+              gradient={{
+                colors: ['#34d399', '#fbbf24', '#ef4444'], // Escala: Verde -> Amarillo -> Rojo
+                startPoints: [0.2, 0.5, 0.8],
+                colorMapSize: 2000,
+              }}
+            />
+          ) : (
+            /* Marcadores normales */
+            reports.map((report) => (
               <Marker
                 key={report.id}
                 coordinate={{
@@ -216,10 +233,11 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
                 pinColor={getPriorityColor(report.priority)}
                 onPress={() => setSelectedReport(report)}
               />
-            ))}
-          </MapView>
+            ))
+          )}
+        </MapView>
         )}
-
+        
         {/* Leyenda */}
         <View style={homeMapStyles.legendContainer}>
           <Text style={homeMapStyles.legendTitle}>Prioridades</Text>
