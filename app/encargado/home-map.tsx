@@ -201,7 +201,8 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
           </View>
         ) : (
 
-          {/* Leyenda */}
+        <> 
+    {/* Leyenda */}
         <MapView
           style={homeMapStyles.mapContainer}
           provider={PROVIDER_GOOGLE}
@@ -236,6 +237,7 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
             ))
           )}
         </MapView>
+        </> // Cierre del fragmento
         )}
         
         {/* Leyenda */}
