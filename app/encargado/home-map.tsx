@@ -275,6 +275,27 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
         )}
       </View>
 
+            {/* Botón de control de Mapa de Calor */}
+      <TouchableOpacity
+        style={[
+          homeMapStyles.heatmapToggleButton, 
+          showHeatmap && homeMapStyles.heatmapToggleButtonActive
+        ]}
+        onPress={() => setShowHeatmap(!showHeatmap)}
+      >
+        <Image
+          source={require('@/assets/images/map-icon.png')}
+          style={[
+            { width: 24, height: 24 },
+            { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
+          ]}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+      <Text style={homeMapStyles.toggleLabel}>
+        {showHeatmap ? 'PUNTOS' : 'CALOR'}
+      </Text>
+
       {/* Modal detalle del reporte */}
       {selectedReport && (
         <View style={homeMapStyles.reportDetailModal}>
