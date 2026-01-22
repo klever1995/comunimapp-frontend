@@ -33,7 +33,7 @@ interface Report {
 }
 
 export default function AdminHomeMapScreen({ navigation }: any) {
-  const { authState: { user } } = useAuth();
+  const { authState: { user }, logout } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
