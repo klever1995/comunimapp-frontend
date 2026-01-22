@@ -1,11 +1,10 @@
 // app/reportante/home-map.tsx
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase'; // IMPORT FIREBASE AUTH
-import { homeMapStyles } from '../../styles/admin/home-mapStyles';
 import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,9 +12,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native'
+} from 'react-native';
 import MapView, { Marker, Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
-
+import { homeMapStyles } from '../../styles/reportante/home-mapStyles';
 
 interface Report {
   id: string;
@@ -31,31 +30,28 @@ interface Report {
   created_at: string;
 }
 
-export default function HomeMapScreen({ navigation }: any) {
-  const { authState: { user } } = useAuth();
+export default function AdminHomeMapScreen({ navigation }: any) {
+  const { authState: { user }, logout } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [firebaseReady, setFirebaseReady] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: -0.22985,
     longitude: -78.52495,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-  const [firebaseReady, setFirebaseReady] = useState(false);
 
-  // 👉 PEGA EL CÓDIGO AQUÍ:
-  const [showHeatmap, setShowHeatmap] = useState(false);
-
+  // Cálculo optimizado de puntos para el mapa de calor
   const heatmapPoints = useMemo(() => {
     return reports.map(report => ({
       latitude: report.location.latitude,
       longitude: report.location.longitude,
-      // Peso según prioridad: alta=3, media=2, baja=1
       weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
     }));
   }, [reports]);
-
 
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
@@ -120,6 +116,37 @@ export default function HomeMapScreen({ navigation }: any) {
     return () => unsubscribe();
   }, [user?.id, firebaseReady]);
 
+  // Función para manejar el logout
+  const handleLogout = async () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Cerrar sesión en Firebase
+              await firebaseAuth.signOut();
+              // Limpiar autenticación de tu contexto
+              await logout();
+              // Navegar a la pantalla de login
+              router.replace('/');
+            } catch (error) {
+              console.error('Error al cerrar sesión:', error);
+              Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'alta': return '#ef4444';
@@ -149,7 +176,7 @@ export default function HomeMapScreen({ navigation }: any) {
 
   return (
     <View style={homeMapStyles.container}>
-      {/* Header CON CONTADOR */}
+      {/* Header CON CONTADOR Y BOTÓN DE LOGOUT */}
       <View style={homeMapStyles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={homeMapStyles.headerTitle}>Mapa de zonas</Text>
@@ -159,17 +186,34 @@ export default function HomeMapScreen({ navigation }: any) {
             </View>
           )}
         </View>
-        <TouchableOpacity
-          style={homeMapStyles.notificationButton}
-          onPress={() => navigation.navigate('Notifications')}
-        >
-          <View style={homeMapStyles.notificationBadge} />
-          <Image
-            source={require('@/assets/images/notifications.png')}
-            style={homeMapStyles.notificationIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        
+        <View style={homeMapStyles.headerRightContainer}>
+          {/* Botón de Notificaciones */}
+          <TouchableOpacity
+            style={homeMapStyles.notificationButton}
+            onPress={() => router.push('/notification')}
+          >
+            <View style={homeMapStyles.notificationBadge} />
+            <Image
+              source={require('@/assets/images/notifications.png')}
+              style={homeMapStyles.notificationIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          
+          {/* Botón de Logout */}
+          <TouchableOpacity
+            style={homeMapStyles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Image
+              source={require('@/assets/images/logout.png')}
+              style={homeMapStyles.logoutIcon}
+              resizeMode="contain"
+            />
+            <Text style={homeMapStyles.logoutText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Contenido del mapa */}
@@ -205,29 +249,26 @@ export default function HomeMapScreen({ navigation }: any) {
             </View>
           </View>
         ) : (
-            <MapView
-              style={homeMapStyles.mapContainer}
-              provider={PROVIDER_GOOGLE}
-              region={mapRegion}
-              showsUserLocation
-              showsMyLocationButton
-            >
-              {/* 1. Capa de Calor: Se muestra solo si showHeatmap es true */}
-              {showHeatmap && reports.length > 0 && (
-                <Heatmap
-                  points={heatmapPoints}
-                  radius={50}
+          <MapView
+            style={homeMapStyles.mapContainer}
+            provider={PROVIDER_GOOGLE}
+            region={mapRegion}
+            showsUserLocation
+            showsMyLocationButton
+          >
+          {showHeatmap ? (
+            <Heatmap
+              points={heatmapPoints}
+                radius={50}
                   opacity={0.8}
-                  gradient={{
-                    colors: ['#34d399', '#fbbf24', '#ef4444'], // Verde -> Amarillo -> Rojo
+                    gradient={{
+                    colors: ['#34d399', '#fbbf24', '#ef4444'],
                     startPoints: [0.2, 0.5, 0.8],
-                    colorMapSize: 2000,
+                  colorMapSize: 2000,
                   }}
                 />
-              )}
-
-              {/* 2. Marcadores: Se muestran solo si showHeatmap es false */}
-              {!showHeatmap && reports.map((report) => (
+              ) : (
+              reports.map((report) => (
                 <Marker
                   key={report.id}
                   coordinate={{
@@ -237,10 +278,10 @@ export default function HomeMapScreen({ navigation }: any) {
                   pinColor={getPriorityColor(report.priority)}
                   onPress={() => setSelectedReport(report)}
                 />
-              ))}
-            </MapView>
-                    )}
-
+              ))
+            )}
+          </MapView>
+        )}
         {/* Leyenda */}
         <View style={homeMapStyles.legendContainer}>
           <Text style={homeMapStyles.legendTitle}>Prioridades</Text>
@@ -259,31 +300,28 @@ export default function HomeMapScreen({ navigation }: any) {
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#22c55e' }]} />
             <Text style={homeMapStyles.legendText}>Baja prioridad</Text>
           </View>
-
-          {/* 👉 PEGA EL CÓDIGO DEL BOTÓN AQUÍ: */}
-        <TouchableOpacity
-          style={[
-            homeMapStyles.heatmapToggleButton, 
-            showHeatmap && homeMapStyles.heatmapToggleButtonActive
-          ]}
-          onPress={() => setShowHeatmap(!showHeatmap)}
-        >
-          <Image
-            source={require('@/assets/images/map-icon.png')}
-            style={[
-              { width: 24, height: 24 },
-              { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
-            ]}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
-        <Text style={homeMapStyles.toggleLabel}>
-          {showHeatmap ? 'PUNTOS' : 'CALOR'}
-        </Text>
-        
         </View>
       </View>
+
+              {/* Botón de Alternancia de Mapa de Calor */}
+              <TouchableOpacity
+                style={[
+                  homeMapStyles.heatmapToggleButton, 
+                  showHeatmap && homeMapStyles.heatmapToggleButtonActive
+                ]}
+                onPress={() => setShowHeatmap(!showHeatmap)}
+              >
+                <Image
+                  source={require('@/assets/images/map-icon.png')}
+                  style={[
+                    { width: 24, height: 24 },
+                    { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
+                  ]}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              <Text style={homeMapStyles.toggleLabel}>{showHeatmap ? 'PUNTOS' : 'CALOR'}</Text>
+                    </View>
 
       {/* Modal detalle */}
       {selectedReport && (
@@ -338,7 +376,5 @@ export default function HomeMapScreen({ navigation }: any) {
         </View>
       )}
     </View>
-
-    
   );
 }
