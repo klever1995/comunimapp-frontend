@@ -280,7 +280,34 @@ export const homeMapStyles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 4,
   },
-  
+  headerRightContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+logoutButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  backgroundColor: '#fef2f2',
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#dc2626',
+  marginLeft: 8,
+},
+logoutIcon: {
+  width: 18,
+  height: 18,
+  tintColor: '#dc2626',
+  marginRight: 6,
+},
+logoutText: {
+  fontFamily: 'Roboto_600SemiBold',
+  fontSize: 14,
+  color: '#dc2626',
+  marginLeft: 2,
+},
+
 });
 
 export default homeMapStyles;
