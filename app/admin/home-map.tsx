@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { homeMapStyles } from '@/styles/admin/home-mapStyles';
+import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import React, { useEffect, useMemo, useState } from 'react';
