@@ -6,6 +6,7 @@ import { collection, onSnapshot, query } from 'firebase/firestore';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Text,
   TouchableOpacity,
@@ -69,10 +70,15 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     if (!user?.id || !firebaseReady) return;
 
     setLoading(true);
+
+    // IMPORTANTE: Admin ve TODOS los reportes sin filtro
     const q = query(collection(db, 'reports'));
 
+    
+    // Escuchar cambios en tiempo real
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const reportsData: Report[] = [];
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         reportsData.push({
@@ -90,6 +96,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
 
       setReports(reportsData);
 
+      // Actualizar región del mapa si hay reportes
       if (reportsData.length > 0 && reportsData[0].location) {
         setMapRegion({
           latitude: reportsData[0].location.latitude,
@@ -98,14 +105,50 @@ export default function AdminHomeMapScreen({ navigation }: any) {
           longitudeDelta: 0.05,
         });
       }
+      
       setLoading(false);
     }, (error) => {
       console.error('Error escuchando reportes:', error);
       setLoading(false);
     });
 
+    // Limpiar listener al desmontar
     return () => unsubscribe();
   }, [user?.id, firebaseReady]);
+
+
+
+    // Función para manejar el logout
+    const handleLogout = async () => {
+      Alert.alert(
+        'Cerrar sesión',
+        '¿Estás seguro de que quieres cerrar sesión?',
+        [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {
+            text: 'Cerrar sesión',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                // Cerrar sesión en Firebase
+                await firebaseAuth.signOut();
+                // Limpiar autenticación de tu contexto
+                await logout();
+                // Navegar a la pantalla de login (Expo Router)
+                router.replace('/');
+              } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
+              }
+            },
+          },
+        ]
+      );
+    };
+
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -136,12 +179,14 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     });
   };
 
+  // Navegar a la pantalla de detalles del reporte
   const handleViewReportDetails = (reportId: string) => {
     navigation.navigate('ReportDetails', { reportId });
   };
 
   return (
     <View style={homeMapStyles.container}>
+      {/* Header CON BOTÓN DE LOGOUT */}
       <View style={homeMapStyles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={homeMapStyles.headerTitle}>Todos los Reportes</Text>
@@ -151,19 +196,37 @@ export default function AdminHomeMapScreen({ navigation }: any) {
             </View>
           )}
         </View>
-        <TouchableOpacity
-          style={homeMapStyles.notificationButton}
-          onPress={() => navigation.navigate('Notifications')}
-        >
-          <View style={homeMapStyles.notificationBadge} />
-          <Image
-            source={require('@/assets/images/notifications.png')}
-            style={homeMapStyles.notificationIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+
+        <View style={homeMapStyles.headerRightContainer}>
+          {/* Botón de Notificaciones */}
+          <TouchableOpacity
+            style={homeMapStyles.notificationButton}
+            onPress={() => router.push('/notification')}
+          >
+            <View style={homeMapStyles.notificationBadge} />
+            <Image
+              source={require('@/assets/images/notifications.png')}
+              style={homeMapStyles.notificationIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          {/* Botón de Logout */}
+          <TouchableOpacity
+            style={homeMapStyles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Image
+              source={require('@/assets/images/logout.png')}
+              style={homeMapStyles.logoutIcon}
+              resizeMode="contain"
+            />
+            <Text style={homeMapStyles.logoutText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* Contenido del mapa */}
       <View style={homeMapStyles.contentContainer}>
         {loading ? (
           <View style={homeMapStyles.loadingContainer}>
@@ -178,10 +241,16 @@ export default function AdminHomeMapScreen({ navigation }: any) {
                 style={homeMapStyles.mapIcon}
                 resizeMode="contain"
               />
-              <Text style={homeMapStyles.mapPlaceholderText}>No hay reportes registrados</Text>
+                <Text style={homeMapStyles.mapPlaceholderText}>
+                  No hay reportes registrados
+                  {'\n'}
+                  <Text style={{ fontSize: 14, color: '#94a3b8' }}>
+                    Los reportes creados aparecerán aquí automáticamente
+                  </Text>
+                </Text>
+              </View>
             </View>
-          </View>
-        ) : (
+          ) : (
           <MapView
             style={homeMapStyles.mapContainer}
             provider={PROVIDER_GOOGLE}
@@ -251,6 +320,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         </TouchableOpacity>
         <Text style={homeMapStyles.toggleLabel}>{showHeatmap ? 'PUNTOS' : 'CALOR'}</Text>
 
+        {/* Botón flotante para ver detalles (si hay reporte seleccionado) */}
         {selectedReport && !showHeatmap && (
           <TouchableOpacity
             style={homeMapStyles.floatingReportButton}
@@ -265,6 +335,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         )}
       </View>
 
+      {/* Modal detalle del reporte */}
       {selectedReport && (
         <View style={homeMapStyles.reportDetailModal}>
           <View style={homeMapStyles.reportDetailHeader}>
@@ -275,20 +346,63 @@ export default function AdminHomeMapScreen({ navigation }: any) {
               <Text style={homeMapStyles.reportDetailClose}>✕</Text>
             </TouchableOpacity>
           </View>
+
           <View style={homeMapStyles.reportDetailContent}>
-            <Text style={homeMapStyles.reportDetailDescription}>{selectedReport.description}</Text>
+            <Text style={homeMapStyles.reportDetailDescription}>
+              {selectedReport.description}
+            </Text>
+
             <View style={homeMapStyles.reportDetailInfo}>
               <Text style={homeMapStyles.reportDetailLabel}>Ubicación:</Text>
               <Text style={homeMapStyles.reportDetailText}>
-                {selectedReport.location.address || 'Sin dirección'}{selectedReport.location.city ? `, ${selectedReport.location.city}` : ''}
+                {selectedReport.location.address || 'Sin dirección'}
+                {selectedReport.location.city ? `, ${selectedReport.location.city}` : ''}
               </Text>
             </View>
+
             <View style={homeMapStyles.reportDetailInfo}>
               <Text style={homeMapStyles.reportDetailLabel}>Prioridad:</Text>
-              <Text style={[homeMapStyles.reportDetailText, { color: getPriorityColor(selectedReport.priority), fontWeight: 'bold' }]}>
+              <Text
+                style={[
+                  homeMapStyles.reportDetailText,
+                  { color: getPriorityColor(selectedReport.priority), fontWeight: 'bold' },
+                ]}
+              >
                 {selectedReport.priority.toUpperCase()}
               </Text>
             </View>
+
+            <View style={homeMapStyles.reportDetailInfo}>
+              <Text style={homeMapStyles.reportDetailLabel}>Estado:</Text>
+              <Text style={homeMapStyles.reportDetailText}>
+                {selectedReport.status.replace('_', ' ').toUpperCase()}
+              </Text>
+            </View>
+
+            <View style={homeMapStyles.reportDetailInfo}>
+              <Text style={homeMapStyles.reportDetailLabel}>Fecha:</Text>
+              <Text style={homeMapStyles.reportDetailText}>
+                {formatDate(selectedReport.created_at)}
+              </Text>
+            </View>
+
+            {selectedReport.assigned_to && (
+              <View style={homeMapStyles.reportDetailInfo}>
+                <Text style={homeMapStyles.reportDetailLabel}>Asignado a:</Text>
+                <Text style={homeMapStyles.reportDetailText}>
+                  {selectedReport.assigned_to.substring(0, 8)}...
+                </Text>
+              </View>
+            )}
+
+            {selectedReport.reporter_uid && (
+              <View style={homeMapStyles.reportDetailInfo}>
+                <Text style={homeMapStyles.reportDetailLabel}>Reportante:</Text>
+                <Text style={homeMapStyles.reportDetailText}>
+                  {selectedReport.is_anonymous_public ? 'Anónimo' : selectedReport.reporter_uid.substring(0, 8) + '...'}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       )}
