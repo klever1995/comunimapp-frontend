@@ -25,9 +25,16 @@ export const homeMapStyles = StyleSheet.create({
     fontSize: 22,
     color: '#1e293b',
   },
+  // Nuevo contenedor para botones a la derecha
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  // Botón de notificaciones
   notificationButton: {
     padding: 8,
     position: 'relative',
+    marginRight: 10,
   },
   notificationBadge: {
     position: 'absolute',
@@ -43,6 +50,24 @@ export const homeMapStyles = StyleSheet.create({
     height: 24,
     tintColor: '#64748b',
   },
+  // Nuevo botón de logout
+logoutButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  backgroundColor: '#fef2f2',
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#dc2626',
+  marginLeft: 8,
+},
+logoutIcon: {
+  width: 18,
+  height: 18,
+  tintColor: '#dc2626',
+  marginRight: 6,
+},
   
   // Contenido del mapa
   contentContainer: {
@@ -252,7 +277,7 @@ export const homeMapStyles = StyleSheet.create({
   },
   heatmapToggleButton: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 100, // Ajustado para que no tape el botón de detalles
     right: 20,
     width: 56,
     height: 56,
@@ -272,13 +297,20 @@ export const homeMapStyles = StyleSheet.create({
     bottom: 85,
     right: 20,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#1e293b',
     textAlign: 'center',
     width: 56,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 4,
   },
+logoutText: {
+  fontFamily: 'Roboto_600SemiBold',
+  fontSize: 14,
+  color: '#dc2626',
+  marginLeft: 2,
+},
+
 });
 
 export default homeMapStyles;
