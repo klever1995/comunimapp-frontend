@@ -301,7 +301,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
             <Text style={homeMapStyles.legendText}>Baja prioridad</Text>
           </View>
         </View>
-      </View>
+      
 
               {/* Botón de Alternancia de Mapa de Calor */}
               <TouchableOpacity
@@ -320,8 +320,8 @@ export default function AdminHomeMapScreen({ navigation }: any) {
                   resizeMode="contain"
                 />
               </TouchableOpacity>
-              <Text style={homeMapStyles.toggleLabel}>{showHeatmap ? 'PUNTOS' : 'CALOR'}</Text>
-                    </View>
+              <Text style={homeMapStyles.toggleLabel}>{showHeatmap ? 'PUNTOS' : 'CALOR'}</Text> 
+      </View>
 
       {/* Modal detalle */}
       {selectedReport && (
