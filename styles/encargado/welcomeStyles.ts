@@ -7,6 +7,7 @@ export const welcomeStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+
   },
   scrollContent: {
     flexGrow: 1,
@@ -79,8 +80,8 @@ export const welcomeStyles = StyleSheet.create({
   },
   welcomeTitleNew: {
     fontSize: 28,
-    fontWeight: '800',
-    color: '#1E293B',
+    color: '#F5F7FA',
+    fontWeight: '700',
     textAlign: 'center',
     lineHeight: 36,
   },
@@ -94,7 +95,7 @@ export const welcomeStyles = StyleSheet.create({
 
   // Cards de Descripción
   descriptionCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fffffff3',
     padding: 20,
     borderRadius: 16,
     marginBottom: 16,
@@ -125,7 +126,7 @@ export const welcomeStyles = StyleSheet.create({
 
   // Funciones Principales
   functionsContainer: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fffffff3',
     padding: 20,
     borderRadius: 16,
     marginTop: 8,
@@ -164,7 +165,7 @@ export const welcomeStyles = StyleSheet.create({
   functionIconContainer: {
     width: 36,
     height: 36,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: '#e0f2fe',
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
@@ -223,7 +224,7 @@ export const welcomeStyles = StyleSheet.create({
   },
   footerTextNew: {
     fontSize: 13,
-    color: '#64748B',
+    color: '#d4d4d4',
     fontWeight: '500',
   },
 
@@ -234,7 +235,7 @@ export const welcomeStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    opacity: 0.08,
+    opacity: 0.30,
   },
   backgroundImage: {
     width: '100%',

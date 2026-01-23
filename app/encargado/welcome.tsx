@@ -73,11 +73,6 @@ export default function EncargadoWelcomeScreen() {
             </Text>
           </View>
 
-          <View style={welcomeStyles.descriptionCard}>
-            <Text style={welcomeStyles.descriptionText}>
-              Esta plataforma te brinda las herramientas para <Text style={welcomeStyles.highlightTextNew}>gestionar eficientemente cada caso, registrar progresos</Text> y asegurar que toda situación reportada tenga un proceso documentado y un cierre adecuado.
-            </Text>
-          </View>
           
           {/* Funciones Principales */}
           <View style={welcomeStyles.functionsContainer}>
