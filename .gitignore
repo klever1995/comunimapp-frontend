@@ -44,3 +44,5 @@ app-example
 
 # Variables de entorno específicas
 .env
+
+google-services.json
