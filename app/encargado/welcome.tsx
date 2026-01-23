@@ -23,13 +23,23 @@ export default function EncargadoWelcomeScreen() {
 
   return (
     <SafeArea>
-      <KeyboardAwareScrollView
-        contentContainerStyle={welcomeStyles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        enableOnAndroid
-        showsVerticalScrollIndicator={false}
-        style={welcomeStyles.container}
-      >
+      <View style={{ flex: 1, position: 'relative' }}>
+        {/* Imagen de Fondo Decorativa */}
+        <View style={welcomeStyles.backgroundImageContainer}>
+          <Image
+            source={require('@/assets/images/fondo_welcome.jpg')}
+            style={welcomeStyles.backgroundImage}
+            resizeMode="cover"
+          />
+        </View>
+
+        <KeyboardAwareScrollView
+          contentContainerStyle={welcomeStyles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid
+          showsVerticalScrollIndicator={false}
+          style={welcomeStyles.container}
+        >
         {/* Header Moderno */}
         <View style={welcomeStyles.headerGradient}>
           <View style={welcomeStyles.logoWrapper}>
@@ -44,15 +54,6 @@ export default function EncargadoWelcomeScreen() {
             <Ionicons name="shield-checkmark" size={18} color="#FFF" />
             <Text style={welcomeStyles.roleTextNew}>ENCARGADO</Text>
           </View>
-        </View>
-
-        {/* Imagen de Fondo Decorativa */}
-        <View style={welcomeStyles.backgroundImageContainer}>
-          <Image
-            source={require('@/assets/images/fondo_welcome.jpg')}
-            style={welcomeStyles.backgroundImage}
-            resizeMode="cover"
-          />
         </View>
 
         {/* Contenido Principal */}
@@ -124,6 +125,7 @@ export default function EncargadoWelcomeScreen() {
           </Text>
         </View>
       </KeyboardAwareScrollView>
+      </View>
     </SafeArea>
   );
 }

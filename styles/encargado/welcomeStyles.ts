@@ -6,7 +6,7 @@ const { width } = Dimensions.get('window');
 export const welcomeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,
@@ -35,29 +35,18 @@ export const welcomeStyles = StyleSheet.create({
     }),
   },
   logoWrapper: {
-    width: 140,
-    height: 140,
-    backgroundColor: '#FFF',
-    borderRadius: 20,
+    width: 160,
+    height: 160,
+    backgroundColor: 'transparent',
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    padding: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
+    overflow: 'hidden',
   },
   logoImage: {
-    width: 120,
-    height: 120,
+    width: 160,
+    height: 160,
   },
   roleBadgeNew: {
     flexDirection: 'row',
@@ -241,12 +230,11 @@ export const welcomeStyles = StyleSheet.create({
   // Imagen de Fondo Decorativa
   backgroundImageContainer: {
     position: 'absolute',
+    top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    height: 200,
-    opacity: 0.1,
-    zIndex: -1,
+    opacity: 0.08,
   },
   backgroundImage: {
     width: '100%',
