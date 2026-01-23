@@ -20,7 +20,7 @@ export const welcomeStyles = StyleSheet.create({
     paddingBottom: 30,
     paddingHorizontal: 20,
     alignItems: 'center',
-    backgroundColor: '#1E40AF',
+    backgroundColor: '#1e40afd8',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     ...Platform.select({
@@ -95,7 +95,7 @@ export const welcomeStyles = StyleSheet.create({
 
   // Cards de Descripción
   descriptionCard: {
-    backgroundColor: '#fffffff3',
+    backgroundColor: '#ffffffea',
     padding: 20,
     borderRadius: 16,
     marginBottom: 16,
@@ -116,7 +116,7 @@ export const welcomeStyles = StyleSheet.create({
   descriptionText: {
     fontSize: 15,
     lineHeight: 24,
-    color: '#475569',
+    color: '#3c4858',
     textAlign: 'justify',
   },
   highlightTextNew: {
@@ -126,7 +126,7 @@ export const welcomeStyles = StyleSheet.create({
 
   // Funciones Principales
   functionsContainer: {
-    backgroundColor: '#fffffff3',
+    backgroundColor: '#ffffffea',
     padding: 20,
     borderRadius: 16,
     marginTop: 8,
@@ -184,7 +184,7 @@ export const welcomeStyles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 16,
-    backgroundColor: '#1E40AF',
+    backgroundColor: '#1e40afe0',
     overflow: 'hidden',
     ...Platform.select({
       ios: {
@@ -235,7 +235,7 @@ export const welcomeStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    opacity: 0.30,
+    opacity: 0.25,
   },
   backgroundImage: {
     width: '100%',
