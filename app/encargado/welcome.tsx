@@ -107,7 +107,7 @@ export default function EncargadoWelcomeScreen() {
           style={welcomeStyles.continueButtonWrapper}
         >
           <View style={welcomeStyles.continueButtonContent}>
-            <Text style={welcomeStyles.continueButtonTextNew}>Continuar al Panel</Text>
+            <Text style={welcomeStyles.continueButtonTextNew}>Continuar al Panel </Text>
             <Ionicons name="arrow-forward-circle" size={24} color="#FFF" />
           </View>
         </TouchableOpacity>
