@@ -5,7 +5,7 @@ export const notificationStyles = StyleSheet.create({
   // Contenedor Ultra Moderno
   modernContainer: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#fffffff8',
   },
 
   // Header Glassmorphism Style
@@ -384,7 +384,7 @@ export const notificationStyles = StyleSheet.create({
 
   // Footer Ultra Moderno
   modernFooter: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff8c',
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderTopWidth: 1,
