@@ -1,17 +1,77 @@
 // app/modal.tsx
 import { SafeArea } from '@/components/ui/safe-area';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
+  Animated,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { registerStyles } from '../styles/registerStyles';
+
+// Componente de Notificación Mejorado
+const Toast = ({ visible, message, type, onHide }: {
+  visible: boolean;
+  message: string;
+  type: 'success' | 'error' | 'warning';
+  onHide: () => void;
+}) => {
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => onHide());
+    }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const config = {
+    success: {
+      bg: '#10B981',
+      icon: 'checkmark-circle' as const,
+    },
+    error: {
+      bg: '#EF4444',
+      icon: 'close-circle' as const,
+    },
+    warning: {
+      bg: '#F59E0B',
+      icon: 'warning' as const,
+    },
+  };
+
+  const { bg, icon } = config[type];
+
+  return (
+    <Animated.View
+      style={[
+        registerStyles.toastContainer,
+        { backgroundColor: bg, opacity: fadeAnim },
+      ]}
+    >
+      <Ionicons name={icon} size={24} color="#FFF" />
+      <Text style={registerStyles.toastText}>{message}</Text>
+    </Animated.View>
+  );
+};
 
 export default function RegisterScreen() {
   const [nombreCompleto, setNombreCompleto] = useState('');
@@ -22,35 +82,48 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Estados para Toast
+  const [toast, setToast] = useState({
+    visible: false,
+    message: '',
+    type: 'success' as 'success' | 'error' | 'warning',
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
+    setToast({ visible: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, visible: false });
+  };
+
   const handleRegister = async () => {
     // Validaciones
     if (!nombreCompleto.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      alert('Por favor completa todos los campos');
+      showToast('Por favor completa todos los campos', 'warning');
       return;
     }
 
     if (password !== confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      showToast('Las contraseñas no coinciden', 'error');
       return;
     }
 
     if (password.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
+      showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
       return;
     }
 
-    // Esta nueva regex acepta dominios con varios puntos como .edu.ec
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+(\.[^\s@]+)*$/;
 
     if (!emailRegex.test(email.trim())) {
-      alert('Por favor ingresa un correo electrónico válido');
+      showToast('Por favor ingresa un correo electrónico válido', 'warning');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // IMPORTANTE: Cambia por tu URL real
       const API_URL = process.env.EXPO_PUBLIC_API_URL;
       
       const response = await fetch(`${API_URL}/auth/register/reportante`, {
@@ -62,9 +135,9 @@ export default function RegisterScreen() {
             nombre_completo: nombreCompleto,
             email: email,
             password: password,
-            username: email, // Campo requerido por el backend
+            username: email,
         }),
-        });
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -74,13 +147,15 @@ export default function RegisterScreen() {
       const userData = await response.json();
       
       // Registro exitoso
-      alert(`¡Registro exitoso! Por favor ingrese a su correo para validar su cuenta`);
+      showToast('¡Registro exitoso! Revisa tu correo para validar tu cuenta', 'success');
       
-      // Redirigir al login
-      router.back();
+      // Redirigir al login después de 3 segundos
+      setTimeout(() => {
+        router.back();
+      }, 3000);
       
     } catch (error: any) {
-      alert(error.message || 'Error en el registro. Intenta nuevamente.');
+      showToast(error.message || 'Error en el registro. Intenta nuevamente.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +175,14 @@ export default function RegisterScreen() {
 
   return (
     <SafeArea>
+      {/* Toast Notification */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
+
       <KeyboardAwareScrollView
         contentContainerStyle={registerStyles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -108,7 +191,7 @@ export default function RegisterScreen() {
         showsVerticalScrollIndicator={false}
         style={registerStyles.container}
       >
-        {/* Header SIN LOGO */}
+        {/* Header */}
         <View style={registerStyles.header}>
           <Text style={registerStyles.title}>Crear cuenta</Text>
           <Text style={registerStyles.subtitle}>
@@ -122,11 +205,7 @@ export default function RegisterScreen() {
           <View style={registerStyles.inputGroup}>
             <Text style={registerStyles.inputLabel}>Nombre completo</Text>
             <View style={registerStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/nombre.png')}
-                style={registerStyles.leftIcon}
-                resizeMode="contain"
-              />
+              <Ionicons name="person-outline" size={20} color="#64748B" style={registerStyles.leftIconNew} />
               <TextInput
                 style={[registerStyles.input, { paddingLeft: 44 }]}
                 placeholder="Ingresa tu nombre completo"
@@ -143,11 +222,7 @@ export default function RegisterScreen() {
           <View style={registerStyles.inputGroup}>
             <Text style={registerStyles.inputLabel}>Correo electrónico</Text>
             <View style={registerStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/correo.png')}
-                style={registerStyles.leftIcon}
-                resizeMode="contain"
-              />
+              <Ionicons name="mail-outline" size={20} color="#64748B" style={registerStyles.leftIconNew} />
               <TextInput
                 style={[registerStyles.input, { paddingLeft: 44 }]}
                 placeholder="correo@ejemplo.com"
@@ -165,11 +240,7 @@ export default function RegisterScreen() {
           <View style={registerStyles.inputGroup}>
             <Text style={registerStyles.inputLabel}>Contraseña</Text>
             <View style={registerStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/contraseña.png')}
-                style={registerStyles.leftIcon}
-                resizeMode="contain"
-              />
+              <Ionicons name="lock-closed-outline" size={20} color="#64748B" style={registerStyles.leftIconNew} />
               <TextInput
                 style={[registerStyles.input, { paddingLeft: 44, paddingRight: 44 }]}
                 placeholder="Ingresa tu contraseña"
@@ -184,13 +255,10 @@ export default function RegisterScreen() {
                 onPress={toggleShowPassword}
                 disabled={isLoading}
               >
-                <Image
-                  source={showPassword
-                    ? require('@/assets/images/ver.png')
-                    : require('@/assets/images/no_ver.png')
-                  }
-                  style={registerStyles.eyeIcon}
-                  resizeMode="contain"
+                <Ionicons
+                  name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                  size={22}
+                  color="#64748B"
                 />
               </TouchableOpacity>
             </View>
@@ -200,11 +268,7 @@ export default function RegisterScreen() {
           <View style={registerStyles.inputGroup}>
             <Text style={registerStyles.inputLabel}>Confirmar Contraseña</Text>
             <View style={registerStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/contraseña.png')}
-                style={registerStyles.leftIcon}
-                resizeMode="contain"
-              />
+              <Ionicons name="lock-closed-outline" size={20} color="#64748B" style={registerStyles.leftIconNew} />
               <TextInput
                 style={[registerStyles.input, { paddingLeft: 44, paddingRight: 44 }]}
                 placeholder="Confirma tu contraseña"
@@ -219,13 +283,10 @@ export default function RegisterScreen() {
                 onPress={toggleShowConfirmPassword}
                 disabled={isLoading}
               >
-                <Image
-                  source={showConfirmPassword
-                    ? require('@/assets/images/ver.png')
-                    : require('@/assets/images/no_ver.png')
-                  }
-                  style={registerStyles.eyeIcon}
-                  resizeMode="contain"
+                <Ionicons
+                  name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
+                  size={22}
+                  color="#64748B"
                 />
               </TouchableOpacity>
             </View>
@@ -245,11 +306,7 @@ export default function RegisterScreen() {
             ) : (
               <View style={registerStyles.loginButtonContent}>
                 <Text style={registerStyles.loginButtonText}>Registrarse</Text>
-                <Image
-                  source={require('@/assets/images/registro.png')}
-                  style={registerStyles.loginIcon}
-                  resizeMode="contain"
-                />
+                <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
               </View>
             )}
           </TouchableOpacity>
@@ -264,6 +321,7 @@ export default function RegisterScreen() {
           </View>
 
           <View style={registerStyles.securityContainer}>
+            <Ionicons name="shield-checkmark-outline" size={16} color="#94a3b8" />
             <Text style={registerStyles.securityText}>
               Tu información será tratada de forma segura y confidencial
             </Text>
