@@ -10,8 +10,8 @@ export const welcomeStyles = StyleSheet.create({
 
   },
   scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 30,
+    flexGrow: 2,
+    paddingBottom: 50,
   },
 
   // Header con Estilo Moderno (Sin Gradiente)
