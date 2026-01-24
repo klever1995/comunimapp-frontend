@@ -108,7 +108,7 @@ export default function ReportanteWelcomeScreen() {
           >
             <View style={welcomeStyles.continueButtonContent}>
               <Text style={welcomeStyles.continueButtonTextNew}>Continuar al Panel</Text>
-              <Ionicons name="arrow-forward-circle" size={24} color="#FFF" />
+              <Ionicons name="arrow-forward-circle" size={24} color="#ffffff" />
             </View>
           </TouchableOpacity>
 
