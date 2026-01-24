@@ -69,9 +69,10 @@ export default function EncargadoWelcomeScreen() {
           {/* Descripción del Rol */}
           <View style={welcomeStyles.descriptionCard}>
             <Text style={welcomeStyles.descriptionText}>
-              Como <Text style={welcomeStyles.highlightTextNew}>encargado</Text>, tu gestión es fundamental: monitorea cada caso reportado, actualiza su progreso y documenta las acciones hasta lograr su resolución completa.
+              Como <Text style={welcomeStyles.highlightTextNew}>encargado</Text>, tu rol es clave para dar seguimiento a los casos reportados, actualizando su estado y documentando cada avance hasta lograr su resolución completa.
             </Text>
           </View>
+
           
           {/* Funciones Principales */}
           <View style={welcomeStyles.functionsContainer}>
