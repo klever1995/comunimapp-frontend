@@ -3,18 +3,18 @@ import { SafeArea } from '@/components/ui/safe-area';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
 import { notificationStyles } from '@/styles/notificationStyles';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -25,7 +25,7 @@ interface Notification {
   message: string;
   notification_type: 'reporte_asignado' | 'avance_subido' | 'reporte_resuelto' | 'sistema' | 'recordatorio' | 'nuevo_avance' | 'asignacion_caso' | 'cambio_estado';
   is_read: boolean;
-  created_at: any; // Firestore timestamp
+  created_at: any;
   user_id: string;
   data?: {
     report_id?: string;
@@ -35,14 +35,76 @@ interface Notification {
   };
 }
 
+// Componente de Toast Mejorado
+const Toast = ({ visible, message, type, onHide }: {
+  visible: boolean;
+  message: string;
+  type: 'success' | 'error' | 'warning';
+  onHide: () => void;
+}) => {
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2500),
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => onHide());
+    }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const config = {
+    success: { bg: '#10B981', icon: 'checkmark-circle' as const },
+    error: { bg: '#EF4444', icon: 'close-circle' as const },
+    warning: { bg: '#F59E0B', icon: 'warning' as const },
+  };
+
+  const { bg, icon } = config[type];
+
+  return (
+    <Animated.View
+      style={[
+        notificationStyles.toastContainer,
+        { backgroundColor: bg, opacity: fadeAnim },
+      ]}
+    >
+      <Ionicons name={icon} size={24} color="#FFF" />
+      <Text style={notificationStyles.toastText}>{message}</Text>
+    </Animated.View>
+  );
+};
+
 export default function NotificationsScreen() {
   const { authState: { user, token } } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'todos' | 'no_leidos'>('todos');
+  const [toast, setToast] = useState({
+    visible: false,
+    message: '',
+    type: 'success' as 'success' | 'error' | 'warning',
+  });
 
-  // Escuchar notificaciones en tiempo real
+  const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
+    setToast({ visible: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, visible: false });
+  };
+
   useEffect(() => {
     if (!user?.id) {
       setNotifications([]);
@@ -52,7 +114,6 @@ export default function NotificationsScreen() {
 
     setLoading(true);
     
-    // Construir query base: notificaciones del usuario actual
     let q = query(
       collection(db, 'notifications'),
       where('user_id', '==', user.id),
@@ -74,18 +135,18 @@ export default function NotificationsScreen() {
         });
       });
 
-        notificationsData.sort((a, b) => {
-    const dateA = a.created_at?.toDate?.() || new Date(0);
-    const dateB = b.created_at?.toDate?.() || new Date(0);
-    return dateB.getTime() - dateA.getTime(); // Orden descendente
-  });
+      notificationsData.sort((a, b) => {
+        const dateA = a.created_at?.toDate?.() || new Date(0);
+        const dateB = b.created_at?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
 
       setNotifications(notificationsData);
       setLoading(false);
       setRefreshing(false);
     }, (error) => {
       console.error('Error escuchando notificaciones:', error);
-      Alert.alert('Error', 'No se pudieron cargar las notificaciones');
+      showToast('No se pudieron cargar las notificaciones', 'error');
       setLoading(false);
       setRefreshing(false);
     });
@@ -93,15 +154,13 @@ export default function NotificationsScreen() {
     return () => unsubscribe();
   }, [user?.id]);
 
-  // Filtrar notificaciones según el filtro seleccionado
   const filteredNotifications = notifications.filter(notification => {
     if (filter === 'no_leidos') {
       return !notification.is_read;
     }
-    return true; // 'todos'
+    return true;
   });
 
-  // Marcar notificación como leída
   const markAsRead = async (notificationId: string) => {
     if (!token) return;
     
@@ -114,158 +173,114 @@ export default function NotificationsScreen() {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        console.error('Error marcando como leída:', error);
+        console.error('Error marcando como leída');
       }
-      // El onSnapshot actualizará automáticamente
     } catch (error) {
       console.error('Error:', error);
     }
   };
 
-  // Marcar todas como leídas
   const markAllAsRead = async () => {
     if (!token || notifications.length === 0) return;
     
-    Alert.alert(
-      'Marcar todas como leídas',
-      '¿Quieres marcar todas las notificaciones como leídas?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Sí, marcar todas', 
-          onPress: async () => {
-            try {
-              const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              });
-              
-              if (response.ok) {
-                Alert.alert('Éxito', 'Todas las notificaciones marcadas como leídas');
-              } else {
-                const error = await response.json();
-                Alert.alert('Error', error.detail || 'Error al marcar notificaciones');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              Alert.alert('Error', 'No se pudieron marcar las notificaciones');
-            }
-          }
-        }
-      ]
-    );
+    try {
+      const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        showToast('Todas marcadas como leídas', 'success');
+      } else {
+        showToast('Error al marcar notificaciones', 'error');
+      }
+    } catch (error) {
+      showToast('Error al marcar notificaciones', 'error');
+    }
   };
 
-  // Eliminar notificación
-  const deleteNotification = (notificationId: string) => {
-    Alert.alert(
-      'Eliminar notificación',
-      '¿Estás seguro de que quieres eliminar esta notificación?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive',
-          onPress: async () => {
-            if (!token) return;
-            
-            try {
-              const response = await fetch(`${API_URL}/notifications/${notificationId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              });
-              
-              if (response.ok) {
-                // El onSnapshot actualizará automáticamente
-              } else {
-                const error = await response.json();
-                Alert.alert('Error', error.detail || 'Error al eliminar notificación');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              Alert.alert('Error', 'No se pudo eliminar la notificación');
-            }
-          }
-        }
-      ]
-    );
+  const deleteNotification = async (notificationId: string) => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        showToast('Notificación eliminada', 'success');
+      } else {
+        showToast('Error al eliminar', 'error');
+      }
+    } catch (error) {
+      showToast('Error al eliminar', 'error');
+    }
   };
 
-  // Eliminar todas las notificaciones
-  const deleteAllNotifications = () => {
-    Alert.alert(
-      'Eliminar todas',
-      '¿Estás seguro de que quieres eliminar TODAS las notificaciones? Esta acción no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar todas', 
-          style: 'destructive',
-          onPress: async () => {
-            if (!token) return;
-            
-            try {
-              const response = await fetch(`${API_URL}/notifications/`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              });
-              
-              if (response.ok) {
-                Alert.alert('Éxito', 'Todas las notificaciones han sido eliminadas');
-              } else {
-                const error = await response.json();
-                Alert.alert('Error', error.detail || 'Error al eliminar notificaciones');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              Alert.alert('Error', 'No se pudieron eliminar las notificaciones');
-            }
-          }
-        }
-      ]
-    );
+  const deleteAllNotifications = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/notifications/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        showToast('Todas eliminadas correctamente', 'success');
+      } else {
+        showToast('Error al eliminar', 'error');
+      }
+    } catch (error) {
+      showToast('Error al eliminar', 'error');
+    }
   };
 
-  // Obtener icono según tipo de notificación
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'reporte_asignado':
-        return require('@/assets/images/asignado.png');
+      case 'asignacion_caso':
+        return 'document-text';
       case 'avance_subido':
-        return require('@/assets/images/send.png');
+      case 'nuevo_avance':
+        return 'cloud-upload';
       case 'reporte_resuelto':
-        return require('@/assets/images/resuelto.png');
+        return 'checkmark-circle';
+      case 'cambio_estado':
+        return 'swap-horizontal';
       case 'recordatorio':
-        return require('@/assets/images/recordatorio.png');
+        return 'alarm';
       default:
-        return require('@/assets/images/mensaje.png');
+        return 'notifications';
     }
   };
 
-  // Obtener color según tipo de notificación
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'reporte_asignado':
-        return '#3B82F6'; // Azul
+      case 'asignacion_caso':
+        return '#3B82F6';
       case 'avance_subido':
-        return '#10B981'; // Verde
+      case 'nuevo_avance':
+        return '#10B981';
       case 'reporte_resuelto':
-        return '#8B5CF6'; // Violeta
+        return '#8B5CF6';
+      case 'cambio_estado':
+        return '#06B6D4';
       case 'recordatorio':
-        return '#F59E0B'; // Ámbar
+        return '#F59E0B';
       default:
-        return '#2563EB'; // Azul primario
+        return '#2563EB';
     }
   };
 
-  // Formatear fecha
   const formatDate = (timestamp: any) => {
     try {
       const date = timestamp?.toDate?.() || new Date();
@@ -275,302 +290,312 @@ export default function NotificationsScreen() {
       const diffHours = Math.floor(diffMins / 60);
       const diffDays = Math.floor(diffHours / 24);
 
-      if (diffMins < 60) {
-        return `Hace ${diffMins} min${diffMins !== 1 ? 's' : ''}`;
-      } else if (diffHours < 24) {
-        return `Hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`;
-      } else if (diffDays < 7) {
-        return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
-      } else {
-        return date.toLocaleDateString('es-ES', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        });
-      }
+      if (diffMins < 1) return 'Ahora';
+      if (diffMins < 60) return `Hace ${diffMins} min`;
+      if (diffHours < 24) return `Hace ${diffHours}h`;
+      if (diffDays < 7) return `Hace ${diffDays}d`;
+      
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+      });
     } catch {
       return 'Reciente';
     }
   };
 
-  // Contar notificaciones no leídas
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  // Función para recargar
   const onRefresh = () => {
     setRefreshing(true);
-    // El onSnapshot se actualizará automáticamente
   };
 
-const handleNotificationPress = (notification: Notification) => {
-  console.log('🔥 NOTIFICACIÓN COMPLETA:', notification);
+  const handleNotificationPress = (notification: Notification) => {
+    if (!notification.is_read) {
+      markAsRead(notification.id);
+    }
 
-  // Marcar como leída
-  if (!notification.is_read) {
-    markAsRead(notification.id);
-  }
-
-  // USAR LOS TIPOS CORRECTOS QUE VIENEN DE TU BACKEND
-  if (user?.role === 'reportante') {
-    if (notification.notification_type === 'nuevo_avance' || notification.notification_type === 'cambio_estado') {
-      // Para avances, intentar navegar a avances
-      const reportId = notification.data?.report_id;
-      if (reportId) {
-        router.push(`/reportante/avances?reportId=${reportId}`);
+    if (user?.role === 'reportante') {
+      if (notification.notification_type === 'nuevo_avance' || notification.notification_type === 'cambio_estado') {
+        const reportId = notification.data?.report_id;
+        if (reportId) {
+          router.push(`/reportante/avances?reportId=${reportId}`);
+        } else {
+          router.push('/reportante/history');
+        }
       } else {
-        // Si no hay reportId, ir al historial
         router.push('/reportante/history');
       }
-    } else if (notification.notification_type === 'asignacion_caso') {
-      // Para asignación, ir al historial
-      router.push('/reportante/history');
-    } else {
-      // Para otros tipos, ir al historial
-      router.push('/reportante/history');
+      return;
     }
-    return;
-  }
-  
-  if (user?.role === 'encargado' && notification.notification_type === 'asignacion_caso') {
-  router.push('/encargado/history');
-  return;
-}
-  
-if (user?.role === 'admin') {
-  if (notification.notification_type === 'nuevo_avance' || 
-      notification.notification_type === 'cambio_estado') {
-    const reportId = notification.data?.report_id;
-    if (reportId) {
-      router.push(`/admin/avances?reportId=${reportId}`);
-    } else {
-      router.push('/admin/report');
+    
+    if (user?.role === 'encargado' && notification.notification_type === 'asignacion_caso') {
+      router.push('/encargado/history');
+      return;
     }
-  } else if (notification.notification_type === 'asignacion_caso') {
-    router.push('/admin/report');
-  } else {
-    router.push('/admin/report');
-  }
-  return;
-}
-  
-  // Rol no reconocido
-  router.push('/');
-};
+    
+    if (user?.role === 'admin') {
+      if (notification.notification_type === 'nuevo_avance' || notification.notification_type === 'cambio_estado') {
+        const reportId = notification.data?.report_id;
+        if (reportId) {
+          router.push(`/admin/avances?reportId=${reportId}`);
+        } else {
+          router.push('/admin/report');
+        }
+      } else {
+        router.push('/admin/report');
+      }
+      return;
+    }
+    
+    router.push('/');
+  };
 
   if (loading && !refreshing) {
     return (
-        <SafeArea>
-      <View style={notificationStyles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563EB" />
-        <Text style={notificationStyles.loadingText}>Cargando notificaciones...</Text>
-      </View>
+      <SafeArea>
+        <View style={notificationStyles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563EB" />
+          <Text style={notificationStyles.loadingText}>Cargando notificaciones...</Text>
+        </View>
       </SafeArea>
     );
   }
 
   return (
     <SafeArea>
-    <View style={notificationStyles.container}>
-      {/* Header */}
-      <View style={notificationStyles.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity 
-            style={notificationStyles.backButton}
-            onPress={() => router.back()}
-          >
-            <Image
-              source={require('@/assets/images/volver.png')}
-              style={notificationStyles.backIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <Text style={notificationStyles.headerTitle}>Notificaciones</Text>
-          {unreadCount > 0 && (
-            <View style={notificationStyles.unreadBadge}>
-              <Text style={notificationStyles.unreadBadgeText}>{unreadCount}</Text>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
+
+      <View style={notificationStyles.container}>
+        {/* Header Moderno */}
+        <View style={notificationStyles.header}>
+          <View style={notificationStyles.headerLeft}>
+            <TouchableOpacity 
+              style={notificationStyles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            </TouchableOpacity>
+            <View>
+              <Text style={notificationStyles.headerTitle}>Notificaciones</Text>
+              {unreadCount > 0 && (
+                <Text style={notificationStyles.headerSubtitle}>
+                  {unreadCount} sin leer
+                </Text>
+              )}
             </View>
-          )}
-        </View>
-        
-        <View style={notificationStyles.headerActions}>
-          {notifications.length > 0 && (
-            <>
-              <TouchableOpacity onPress={markAllAsRead}>
-                <Image
-                  source={require('@/assets/images/checkall.png')}
-                  style={notificationStyles.headerIcon}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={deleteAllNotifications}>
-                <Image
-                  source={require('@/assets/images/borrarN.png')}
-                  style={notificationStyles.headerIcon}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      </View>
-
-      {/* Filtros */}
-      <View style={notificationStyles.filtersContainer}>
-        <TouchableOpacity
-          style={[
-            notificationStyles.filterButton,
-            filter === 'todos' && notificationStyles.filterButtonActive
-          ]}
-          onPress={() => setFilter('todos')}
-        >
-          <Text style={[
-            notificationStyles.filterButtonText,
-            filter === 'todos' && notificationStyles.filterButtonTextActive
-          ]}>
-            Todos ({notifications.length})
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[
-            notificationStyles.filterButton,
-            filter === 'no_leidos' && notificationStyles.filterButtonActive
-          ]}
-          onPress={() => setFilter('no_leidos')}
-        >
-          <Text style={[
-            notificationStyles.filterButtonText,
-            filter === 'no_leidos' && notificationStyles.filterButtonTextActive
-          ]}>
-            No leídas ({unreadCount})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Contenido */}
-      <ScrollView
-        style={notificationStyles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#2563EB']}
-            tintColor="#2563EB"
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {filteredNotifications.length === 0 ? (
-          <View style={notificationStyles.emptyContainer}>
-            <Image
-              source={require('@/assets/images/vacio.png')}
-              style={notificationStyles.emptyIcon}
-              resizeMode="contain"
-            />
-            <Text style={notificationStyles.emptyTitle}>
-              {filter === 'no_leidos' 
-                ? 'No hay notificaciones no leídas' 
-                : 'No hay notificaciones'}
-            </Text>
-            <Text style={notificationStyles.emptySubtitle}>
-              {filter === 'no_leidos'
-                ? '¡Estás al día con todas tus notificaciones!'
-                : 'Aquí aparecerán tus notificaciones importantes'}
-            </Text>
           </View>
-        ) : (
-          <View style={notificationStyles.notificationsList}>
-            {filteredNotifications.map((notification) => {
-              const isUnread = !notification.is_read;
-              
-              return (
-                <TouchableOpacity
-                  key={notification.id}
-                  style={[
-                    notificationStyles.notificationCard,
-                    isUnread && notificationStyles.notificationCardUnread
-                  ]}
-                  onPress={() => handleNotificationPress(notification)}
-                  activeOpacity={0.7}
+          
+          <View style={notificationStyles.headerActions}>
+            {notifications.length > 0 && (
+              <>
+                <TouchableOpacity 
+                  style={notificationStyles.actionButton}
+                  onPress={markAllAsRead}
                 >
-                  {/* Indicador de no leído */}
-                  {isUnread && (
-                    <View style={notificationStyles.unreadIndicator} />
-                  )}
+                  <Ionicons name="checkmark-done" size={22} color="#2563EB" />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={notificationStyles.actionButton}
+                  onPress={deleteAllNotifications}
+                >
+                  <Ionicons name="trash-outline" size={22} color="#EF4444" />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
 
-                  {/* Icono */}
-                  <View style={[
-                    notificationStyles.iconContainer,
-                    { backgroundColor: getNotificationColor(notification.notification_type) + '20' }
-                  ]}>
-                    <Image
-                      source={getNotificationIcon(notification.notification_type)}
-                      style={[
-                        notificationStyles.icon,
-                        { tintColor: getNotificationColor(notification.notification_type) }
-                      ]}
-                      resizeMode="contain"
-                    />
-                  </View>
+        {/* Filtros Modernos */}
+        <View style={notificationStyles.filtersContainer}>
+          <TouchableOpacity
+            style={[
+              notificationStyles.filterButton,
+              filter === 'todos' && notificationStyles.filterButtonActive
+            ]}
+            onPress={() => setFilter('todos')}
+          >
+            <Ionicons 
+              name="list" 
+              size={18} 
+              color={filter === 'todos' ? '#FFF' : '#64748b'} 
+            />
+            <Text style={[
+              notificationStyles.filterButtonText,
+              filter === 'todos' && notificationStyles.filterButtonTextActive
+            ]}>
+              Todos
+            </Text>
+            <View style={[
+              notificationStyles.filterBadge,
+              filter === 'todos' && notificationStyles.filterBadgeActive
+            ]}>
+              <Text style={[
+                notificationStyles.filterBadgeText,
+                filter === 'todos' && notificationStyles.filterBadgeTextActive
+              ]}>
+                {notifications.length}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              notificationStyles.filterButton,
+              filter === 'no_leidos' && notificationStyles.filterButtonActive
+            ]}
+            onPress={() => setFilter('no_leidos')}
+          >
+            <Ionicons 
+              name="mail-unread" 
+              size={18} 
+              color={filter === 'no_leidos' ? '#FFF' : '#64748b'} 
+            />
+            <Text style={[
+              notificationStyles.filterButtonText,
+              filter === 'no_leidos' && notificationStyles.filterButtonTextActive
+            ]}>
+              No leídas
+            </Text>
+            <View style={[
+              notificationStyles.filterBadge,
+              filter === 'no_leidos' && notificationStyles.filterBadgeActive
+            ]}>
+              <Text style={[
+                notificationStyles.filterBadgeText,
+                filter === 'no_leidos' && notificationStyles.filterBadgeTextActive
+              ]}>
+                {unreadCount}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-                  {/* Contenido */}
-                  <View style={notificationStyles.notificationContent}>
-                    <View style={notificationStyles.notificationHeader}>
-                      <Text style={notificationStyles.notificationTitle}>
-                        {notification.title}
-                      </Text>
-                      <Text style={notificationStyles.notificationTime}>
-                        {formatDate(notification.created_at)}
-                      </Text>
+        {/* Contenido */}
+        <ScrollView
+          style={notificationStyles.content}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#2563EB']}
+              tintColor="#2563EB"
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredNotifications.length === 0 ? (
+            <View style={notificationStyles.emptyContainer}>
+              <View style={notificationStyles.emptyIconContainer}>
+                <Ionicons name="notifications-off-outline" size={80} color="#CBD5E1" />
+              </View>
+              <Text style={notificationStyles.emptyTitle}>
+                {filter === 'no_leidos' 
+                  ? '¡Todo al día!' 
+                  : 'Sin notificaciones'}
+              </Text>
+              <Text style={notificationStyles.emptySubtitle}>
+                {filter === 'no_leidos'
+                  ? 'Has leído todas tus notificaciones'
+                  : 'Aquí aparecerán tus notificaciones importantes'}
+              </Text>
+            </View>
+          ) : (
+            <View style={notificationStyles.notificationsList}>
+              {filteredNotifications.map((notification) => {
+                const isUnread = !notification.is_read;
+                const color = getNotificationColor(notification.notification_type);
+                
+                return (
+                  <TouchableOpacity
+                    key={notification.id}
+                    style={[
+                      notificationStyles.notificationCard,
+                      isUnread && notificationStyles.notificationCardUnread
+                    ]}
+                    onPress={() => handleNotificationPress(notification)}
+                    activeOpacity={0.7}
+                  >
+                    {/* Icono con fondo de color */}
+                    <View style={[
+                      notificationStyles.iconContainer,
+                      { backgroundColor: color + '15' }
+                    ]}>
+                      <Ionicons 
+                        name={getNotificationIcon(notification.notification_type) as any}
+                        size={24} 
+                        color={color}
+                      />
+                      {isUnread && (
+                        <View style={[notificationStyles.unreadDot, { backgroundColor: color }]} />
+                      )}
                     </View>
-                    
-                    <Text style={notificationStyles.notificationMessage}>
-                      {notification.message}
-                    </Text>
 
-                    {/* Tipo de notificación */}
-                    <View style={notificationStyles.notificationTypeContainer}>
+                    {/* Contenido */}
+                    <View style={notificationStyles.notificationContent}>
+                      <View style={notificationStyles.notificationHeader}>
+                        <Text style={notificationStyles.notificationTitle} numberOfLines={1}>
+                          {notification.title}
+                        </Text>
+                        <Text style={notificationStyles.notificationTime}>
+                          {formatDate(notification.created_at)}
+                        </Text>
+                      </View>
+                      
+                      <Text style={notificationStyles.notificationMessage} numberOfLines={2}>
+                        {notification.message}
+                      </Text>
+
+                      {/* Badge de tipo */}
                       <View style={[
-                        notificationStyles.notificationTypeBadge,
-                        { backgroundColor: getNotificationColor(notification.notification_type) }
+                        notificationStyles.typeBadge,
+                        { backgroundColor: color + '20' }
                       ]}>
-                        <Text style={notificationStyles.notificationTypeText}>
-                          {notification.notification_type.replace('_', ' ').toUpperCase()}
+                        <Text style={[notificationStyles.typeBadgeText, { color }]}>
+                          {notification.notification_type.replace('_', ' ')}
                         </Text>
                       </View>
                     </View>
-                  </View>
 
-                  {/* Botón eliminar */}
-                  <TouchableOpacity
-                    style={notificationStyles.deleteButton}
-                    onPress={() => deleteNotification(notification.id)}
-                  >
-                    <Image
-                      source={require('@/assets/images/borrarN.png')}
-                      style={notificationStyles.deleteIcon}
-                      resizeMode="contain"
-                    />
+                    {/* Botón eliminar */}
+                    <TouchableOpacity
+                      style={notificationStyles.deleteButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notification.id);
+                      }}
+                    >
+                      <Ionicons name="close-circle" size={20} color="#94a3b8" />
+                    </TouchableOpacity>
                   </TouchableOpacity>
-                </TouchableOpacity>
-              );
-            })}
+                );
+              })}
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Footer con contador */}
+        {notifications.length > 0 && (
+          <View style={notificationStyles.footer}>
+            <Ionicons 
+              name={unreadCount > 0 ? "mail-unread" : "checkmark-done"} 
+              size={16} 
+              color="#64748b" 
+            />
+            <Text style={notificationStyles.footerText}>
+              {unreadCount > 0 
+                ? `${unreadCount} notificación${unreadCount !== 1 ? 'es' : ''} sin leer`
+                : 'Todas las notificaciones leídas'
+              }
+            </Text>
           </View>
         )}
-      </ScrollView>
-
-      {/* Pie de página */}
-      {notifications.length > 0 && (
-        <View style={notificationStyles.footer}>
-          <Text style={notificationStyles.footerText}>
-            {unreadCount > 0 
-              ? `Tienes ${unreadCount} notificación${unreadCount !== 1 ? 'es' : ''} sin leer`
-              : 'Todas las notificaciones leídas'
-            }
-          </Text>
-        </View>
-      )}
-    </View>
+      </View>
     </SafeArea>
   );
 }
