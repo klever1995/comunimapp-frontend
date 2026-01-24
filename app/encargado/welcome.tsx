@@ -114,7 +114,7 @@ export default function EncargadoWelcomeScreen() {
 
         {/* Footer Mejorado */}
         <View style={welcomeStyles.footerNew}>
-          <Ionicons name="shield-checkmark-outline" size={20} color="#64748B" />
+          <Ionicons name="shield-checkmark-outline" size={20} color="#919daf" />
           <Text style={welcomeStyles.footerTextNew}>
             Sistema seguro y protegido
           </Text>
