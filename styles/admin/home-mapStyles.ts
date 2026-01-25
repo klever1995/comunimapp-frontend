@@ -1,324 +1,260 @@
-// C:\Users\Klever\Desktop\frontend mapp\ComunimappMobile\app\styles\admin\home-mapStyles.ts
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export const homeMapStyles = StyleSheet.create({
   // Contenedor principal
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC', // Gris muy claro para resaltar las tarjetas blancas
   },
   
-  // Header
+  // Header con Efecto Cristal
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 15,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)', // Glassmorphism
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 8,
+    zIndex: 100,
   },
   headerTitle: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 22,
-    color: '#1e293b',
+    fontSize: 24,
+    fontWeight: '800', // Montserrat ExtraBold
+    color: '#0F172A',
+    letterSpacing: -0.8,
   },
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  // Botones Modernos
   notificationButton: {
-    padding: 8,
-    position: 'relative',
+    padding: 10,
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+    borderRadius: 14,
   },
   notificationBadge: {
     position: 'absolute',
-    top: 2,
-    right: 2,
+    top: 8,
+    right: 8,
     backgroundColor: '#F97316',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
-  notificationIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#64748b',
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    gap: 6,
   },
-  
-  // Contenido del mapa
+  logoutIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#EF4444',
+  },
+  logoutText: {
+    fontFamily: 'Roboto_700Bold',
+    fontSize: 13,
+    color: '#EF4444',
+  },
+
+  // Mapa
   contentContainer: {
     flex: 1,
-    position: 'relative',
   },
-  
-  // Mapa real
   mapContainer: {
     flex: 1,
     width: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 20,
   },
   
-  // Placeholder cuando no hay reportes
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    marginHorizontal: 20,
-    marginVertical: 10,
-  },
-  mapPlaceholder: {
-    width: '90%',
-    height: '70%',
-    backgroundColor: '#e2e8f0',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#cbd5e1',
-    borderStyle: 'dashed',
-  },
-  mapIcon: {
-    width: 80,
-    height: 80,
-    tintColor: '#94a3b8',
-  },
-  mapPlaceholderText: {
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 16,
-    color: '#64748b',
-    textAlign: 'center',
-    marginTop: 20,
-    paddingHorizontal: 20,
-    lineHeight: 24,
-  },
-  
-  // Leyenda de prioridades
-legendContainer: {
+  // Leyenda Flotante Moderna
+  legendContainer: {
     position: 'absolute',
-    top: 110, // Un poco más abajo del header
+    top: 20,
     left: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Efecto translúcido
-    padding: 15,
-    borderRadius: 20,
-    width: 160,
-    // Sombra más suave y difusa (moderna)
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    padding: 18,
+    borderRadius: 24, // Bordes mucho más redondeados
+    width: 170,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowRadius: 20,
+    elevation: 10,
   },
   legendTitle: {
-    fontSize: 14,
-    fontWeight: '800', // Montserrat Bold
-    color: '#1e293b',
-    marginBottom: 10,
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#64748B',
+    marginBottom: 12,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   legendColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     marginRight: 10,
   },
   legendText: {
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 14,
-    color: '#475569',
+    fontFamily: 'Montserrat_500Medium',
+    fontSize: 13,
+    color: '#334155',
   },
-  
-  // Botón flotante para ver detalles
+
+  // Botón de Alternancia (Heatmap)
+  heatmapToggleButton: {
+    position: 'absolute',
+    bottom: 110,
+    right: 20,
+    width: 58,
+    height: 58,
+    borderRadius: 20, // Forma más cuadrada-redondeada moderna
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  heatmapToggleButtonActive: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  toggleLabel: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#1E293B',
+    textAlign: 'center',
+    width: 58,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 6,
+    paddingVertical: 2,
+    overflow: 'hidden',
+  },
+
+  // Botón Flotante Principal
   floatingReportButton: {
     position: 'absolute',
     bottom: 30,
     right: 20,
     backgroundColor: '#2563EB',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 16,
+    elevation: 12,
   },
-  floatingButtonIcon: {
-    width: 28,
-    height: 28,
-    tintColor: '#FFFFFF',
-  },
-  
-  // Modal de detalles del reporte
+
+  // Modal de Detalle (Rediseño Total)
   reportDetailModal: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
     left: 20,
     right: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    elevation: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: 30, // Mucho más redondo
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 25 },
+    shadowOpacity: 0.15,
+    shadowRadius: 35,
+    elevation: 20,
     zIndex: 1000,
   },
   reportDetailHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
+    paddingBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingBottom: 10,
+    borderBottomColor: 'rgba(226, 232, 240, 0.5)',
   },
   reportDetailTitle: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#1e293b',
-    flex: 1,
-  },
-  reportDetailClose: {
     fontSize: 20,
-    color: '#64748b',
-    paddingHorizontal: 10,
-    fontFamily: 'Roboto_700Bold',
-  },
-  reportDetailContent: {
-    marginTop: 5,
+    color: '#0F172A',
+    letterSpacing: -0.5,
   },
   reportDetailDescription: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 15,
     color: '#475569',
-    lineHeight: 22,
-    marginBottom: 15,
-  },
-  reportDetailInfo: {
-    flexDirection: 'row',
-    marginBottom: 8,
+    lineHeight: 24,
+    marginBottom: 20,
   },
   reportDetailLabel: {
-    fontFamily: 'Roboto_600SemiBold',
-    fontSize: 14,
-    color: '#64748b',
-    width: 80,
+    fontFamily: 'Roboto_700Bold',
+    fontSize: 12,
+    color: '#94A3B8',
+    width: 90,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   reportDetailText: {
-    fontFamily: 'Montserrat_400Regular',
+    fontFamily: 'Montserrat_600SemiBold',
     fontSize: 14,
-    color: '#1e293b',
+    color: '#1E293B',
     flex: 1,
   },
-  
-  // Estados de carga
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    marginHorizontal: 20,
-    marginVertical: 10,
-  },
-  loadingText: {
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 15,
-    color: '#64748b',
-    marginTop: 10,
-  },
-  
-  // Contador de reportes
+
+  // Contador de Reportes (Badge del Header)
   reportCountBadge: {
     backgroundColor: '#2563EB',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginLeft: 10,
+    marginLeft: 8,
   },
   reportCountText: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#FFFFFF',
   },
 
-    heatmapToggleButton: {
-    position: 'absolute',
-    bottom: 100, // Ubicado justo encima del botón de ver detalles
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FFFFFF',
+  // Estados de Carga
+  loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    borderWidth: 2,
-    borderColor: '#2563EB',
+    zIndex: 1000,
   },
-  heatmapToggleButtonActive: {
-    backgroundColor: '#2563EB', // Color cuando el mapa de calor está encendido
-  },
-  toggleLabel: {
-    position: 'absolute',
-    bottom: 85,
-    right: 20,
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#1e293b',
-    textAlign: 'center',
-    width: 56,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 4,
-    paddingVertical: 2,
-  },
-
-    // Agrega estos estilos en tu home-mapStyles.ts del admin
-headerRightContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-logoutButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  backgroundColor: '#fef2f2',
-  borderRadius: 8,
-  borderWidth: 1,
-  borderColor: '#dc2626',
-  marginLeft: 8,
-},
-logoutIcon: {
-  width: 18,
-  height: 18,
-  tintColor: '#dc2626',
-  marginRight: 6,
-},
-logoutText: {
-  fontFamily: 'Roboto_600SemiBold',
-  fontSize: 14,
-  color: '#dc2626',
-  marginLeft: 2,
-},
-
-  
 });
 
 export default homeMapStyles;
