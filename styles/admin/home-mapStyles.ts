@@ -1,63 +1,68 @@
 import { StyleSheet, Platform } from 'react-native';
 
 export const homeMapStyles = StyleSheet.create({
-  // Contenedor principal
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC', // Gris muy claro para resaltar las tarjetas blancas
+    backgroundColor: '#F1F5F9', // Fondo gris muy tenue para resaltar el cristal
   },
   
-  // Header con Efecto Cristal
+  // Header con efecto cristal y alineación corregida
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.85)', // Glassmorphism
-    paddingVertical: 18,
-    paddingHorizontal: 24,
+    paddingVertical: 15,
+    paddingHorizontal: 16, // Padding ajustado para que nada se salga
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
-    shadowRadius: 15,
+    shadowRadius: 10,
     elevation: 8,
     zIndex: 100,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '800', // Montserrat ExtraBold
+    fontSize: 22,
+    fontWeight: '800',
     color: '#0F172A',
-    letterSpacing: -0.8,
+    letterSpacing: -0.5,
+    flexShrink: 1, // Permite que el título se ajuste si hay poco espacio
   },
   headerRightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10, // Espaciado controlado entre elementos
   },
 
-  // Botones Modernos
+  // Botón de Notificación Moderno
   notificationButton: {
-    padding: 10,
-    backgroundColor: 'rgba(37, 99, 235, 0.08)',
-    borderRadius: 14,
+    width: 42,
+    height: 42,
+    backgroundColor: 'rgba(37, 99, 235, 0.1)', // Fondo azul tenue
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 2,
+    right: 2,
     backgroundColor: '#F97316',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },
+
+  // Botón Salir Corregido
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)', // Fondo rojo tenue
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
     gap: 6,
   },
   logoutIcon: {
@@ -71,7 +76,7 @@ export const homeMapStyles = StyleSheet.create({
     color: '#EF4444',
   },
 
-  // Mapa
+  // Contenido y Mapa
   contentContainer: {
     flex: 1,
   },
@@ -80,30 +85,30 @@ export const homeMapStyles = StyleSheet.create({
     width: '100%',
   },
   
-  // Leyenda Flotante Moderna
+  // Leyenda de Cristal con bordes extra redondeados
   legendContainer: {
     position: 'absolute',
     top: 20,
     left: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 18,
-    borderRadius: 24, // Bordes mucho más redondeados
-    width: 170,
+    borderRadius: 25, // Bordes muy redondeados
+    width: 165,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 15 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowRadius: 15,
+    elevation: 5,
   },
   legendTitle: {
     fontSize: 12,
     fontWeight: '800',
     color: '#64748B',
-    marginBottom: 12,
+    marginBottom: 10,
     textTransform: 'uppercase',
-    letterSpacing: 1.2,
+    letterSpacing: 1,
   },
   legendItem: {
     flexDirection: 'row',
@@ -122,28 +127,27 @@ export const homeMapStyles = StyleSheet.create({
     color: '#334155',
   },
 
-  // Botón de Alternancia (Heatmap)
+  // Botón Heatmap Modernizado
   heatmapToggleButton: {
     position: 'absolute',
     bottom: 110,
     right: 20,
-    width: 58,
-    height: 58,
-    borderRadius: 20, // Forma más cuadrada-redondeada moderna
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 2,
+    borderColor: '#2563EB',
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
     elevation: 6,
   },
   heatmapToggleButtonActive: {
     backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
   },
   toggleLabel: {
     position: 'absolute',
@@ -151,48 +155,27 @@ export const homeMapStyles = StyleSheet.create({
     right: 20,
     fontSize: 9,
     fontWeight: '900',
-    color: '#1E293B',
+    color: '#2563EB',
     textAlign: 'center',
-    width: 58,
+    width: 56,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 6,
     paddingVertical: 2,
-    overflow: 'hidden',
   },
 
-  // Botón Flotante Principal
-  floatingReportButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    backgroundColor: '#2563EB',
-    width: 64,
-    height: 64,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-
-  // Modal de Detalle (Rediseño Total)
+  // Modal de Detalles Rediseñado
   reportDetailModal: {
     position: 'absolute',
     bottom: 30,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    borderRadius: 30, // Mucho más redondo
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 30, // Bordes redondeados modernos
     padding: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 25 },
+    shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.15,
-    shadowRadius: 35,
+    shadowRadius: 30,
     elevation: 20,
     zIndex: 1000,
   },
@@ -200,23 +183,22 @@ export const homeMapStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 15,
+    marginBottom: 15,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.5)',
+    borderBottomColor: 'rgba(226, 232, 240, 0.6)',
   },
   reportDetailTitle: {
     fontFamily: 'Roboto_700Bold',
     fontSize: 20,
     color: '#0F172A',
-    letterSpacing: -0.5,
   },
   reportDetailDescription: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 15,
     color: '#475569',
-    lineHeight: 24,
-    marginBottom: 20,
+    lineHeight: 22,
+    marginBottom: 15,
   },
   reportDetailLabel: {
     fontFamily: 'Roboto_700Bold',
@@ -224,7 +206,6 @@ export const homeMapStyles = StyleSheet.create({
     color: '#94A3B8',
     width: 90,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   reportDetailText: {
     fontFamily: 'Montserrat_600SemiBold',
@@ -233,21 +214,19 @@ export const homeMapStyles = StyleSheet.create({
     flex: 1,
   },
 
-  // Contador de Reportes (Badge del Header)
+  // Badge y Carga
   reportCountBadge: {
     backgroundColor: '#2563EB',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
+    borderRadius: 10,
+    marginLeft: 6,
   },
   reportCountText: {
     fontFamily: 'Roboto_700Bold',
     fontSize: 11,
     color: '#FFFFFF',
   },
-
-  // Estados de Carga
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
