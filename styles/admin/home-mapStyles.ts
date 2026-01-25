@@ -11,22 +11,18 @@ header: {
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
-  // NUEVO: Azul medio opaco (Glassmorphism azul)
-  backgroundColor: 'rgba(37, 99, 235, 0.85)', 
-  paddingTop: Platform.OS === 'ios' ? 50 : 40,
-  paddingBottom: 15,
+  backgroundColor: 'rgba(37, 99, 235, 0.9)', // Azul medio opaco unificado
+  // Ajuste de altura: Reducimos paddings para que sea más compacto
+  paddingTop: Platform.OS === 'ios' ? 45 : 35, 
+  paddingBottom: 10, 
   paddingHorizontal: 16,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.1,
-  shadowRadius: 10,
-  elevation: 10,
   zIndex: 100,
+  elevation: 10,
 },
 headerTitle: {
-  fontSize: 22,
+  fontSize: 20, // Un poco más pequeño para ahorrar espacio
   fontWeight: '800',
-  color: '#FFFFFF', // Texto blanco para resaltar sobre el azul
+  color: '#FFFFFF', // Texto blanco para contraste
   letterSpacing: -0.5,
 },
   headerRightContainer: {
@@ -37,10 +33,10 @@ headerTitle: {
 
 // 3. Botón de Notificación: Más pequeño y color Slate elegante
 notificationButton: {
-  width: 38,
-  height: 38,
-  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Fondo blanco muy suave
-  borderRadius: 19,
+  width: 36, // Reducimos tamaño del botón
+  height: 36,
+  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  borderRadius: 18,
   justifyContent: 'center',
   alignItems: 'center',
 },
@@ -65,10 +61,10 @@ notificationIcon: {
 logoutButton: {
   flexDirection: 'row',
   alignItems: 'center',
-  backgroundColor: '#FFFFFF', // Botón blanco para que destaque
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  borderRadius: 10,
+  backgroundColor: '#FFFFFF', 
+  paddingHorizontal: 10,
+  paddingVertical: 4, // Padding vertical mínimo
+  borderRadius: 8,
 },
 
   logoutIcon: {
