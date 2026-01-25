@@ -13,8 +13,8 @@ header: {
   alignItems: 'center',
   backgroundColor: 'rgba(37, 99, 235, 0.9)', // Azul medio opaco unificado
   // Ajuste de altura: Reducimos paddings para que sea más compacto
-  paddingTop: Platform.OS === 'ios' ? 45 : 35, 
-  paddingBottom: 10, 
+  paddingTop: Platform.OS === 'ios' ? 45 : 3, 
+  paddingBottom: 1, 
   paddingHorizontal: 16,
   zIndex: 100,
   elevation: 10,
