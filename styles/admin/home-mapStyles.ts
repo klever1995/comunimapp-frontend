@@ -1,24 +1,20 @@
 import { StyleSheet, Platform } from 'react-native';
 
 export const homeMapStyles = StyleSheet.create({
-  container: {
+container: {
     flex: 1,
-    backgroundColor: '#F1F5F9', // Fondo gris muy tenue para resaltar el cristal
+    backgroundColor: 'transparent', 
   },
   
-  // Header con efecto cristal y alineación corregida
+// 2. Header: Más translúcido y con mejor espaciado
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)', // Glassmorphism
-    paddingVertical: 15,
-    paddingHorizontal: 16, // Padding ajustado para que nada se salga
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Más transparente
+    paddingTop: Platform.OS === 'ios' ? 50 : 40, // Espacio para la barra de estado
+    paddingBottom: 15,
+    paddingHorizontal: 16,
     zIndex: 100,
   },
   headerTitle: {
@@ -34,14 +30,19 @@ export const homeMapStyles = StyleSheet.create({
     gap: 10, // Espaciado controlado entre elementos
   },
 
-  // Botón de Notificación Moderno
+// 3. Botón de Notificación: Más pequeño y color Slate elegante
   notificationButton: {
-    width: 42,
-    height: 42,
-    backgroundColor: 'rgba(37, 99, 235, 0.1)', // Fondo azul tenue
-    borderRadius: 12,
+    width: 38, // Reducimos tamaño
+    height: 38,
+    backgroundColor: 'rgba(226, 232, 240, 0.8)', // Gris muy tenue
+    borderRadius: 19, // Circular
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  notificationIcon: {
+    width: 20, // Icono más pequeño
+    height: 20,
+    tintColor: '#475569', // Color Slate (azul grisáceo) más agradable que el negro
   },
   notificationBadge: {
     position: 'absolute',
@@ -55,15 +56,16 @@ export const homeMapStyles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
 
-  // Botón Salir Corregido
+// 4. Botón Salir: Aseguramos que se mantenga en pantalla
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)', // Fondo rojo tenue
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    gap: 6,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   logoutIcon: {
     width: 18,
