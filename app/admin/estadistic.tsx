@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { estadisticStyles } from "@/styles/admin/estadisticStyles";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -14,11 +15,22 @@ import {
   View,
 } from "react-native";
 import { PieChart } from "react-native-chart-kit";
-
+const METRICS_API_URL = process.env.EXPO_PUBLIC_API_URL;
 const screenWidth = Dimensions.get("window").width;
-// ASEGURA TU IP AQUI
-const METRICS_API_URL = "http://192.168.110.236:8000";
 
+const etiquetasAlerta: Record<string, string> = {
+  red: "CRÍTICO",
+  yellow: "ADVERTENCIA",
+  green: "ÓPTIMO",
+  blue: "INFORMATIVO",
+};
+
+const filterLabels: Record<string, string> = {
+  dia: "Día",
+  semana: "Semana",
+  mes: "Mes",
+  historico: "Total",
+};
 const CHART_COLORS = [
   "#F59E0B",
   "#3B82F6",
@@ -267,7 +279,12 @@ export default function AdminEstadisticScreen() {
             <View
               style={[localStyles.modalHeader, { backgroundColor: aiColor }]}
             >
-              <Text style={{ fontSize: 24 }}>✨</Text>
+              <Ionicons
+                name="sparkles-sharp"
+                size={25}
+                color={aiText}
+                style={{ marginRight: -2 }}
+              />
               <Text style={[localStyles.modalTitle, { color: aiText }]}>
                 {ai?.titulo || "Análisis Completado"}
               </Text>
@@ -279,13 +296,15 @@ export default function AdminEstadisticScreen() {
 
               <View style={{ marginTop: 20, flexDirection: "row", gap: 10 }}>
                 <View style={[localStyles.badge, { backgroundColor: aiColor }]}>
-                  <Text style={{ color: aiText, fontWeight: "bold" }}>
-                    {ai?.color_alerta?.toUpperCase() || "INFO"}
+                  <Text
+                    style={{ color: aiText, fontWeight: "bold", fontSize: 12 }}
+                  >
+                    {/* Aquí hacemos la magia: buscamos la traducción o usamos "INFO" por defecto */}
+                    {etiquetasAlerta[ai?.color_alerta?.toLowerCase()] || "INFO"}
                   </Text>
                 </View>
               </View>
             </View>
-
             {/* Botón Cerrar */}
             <TouchableOpacity
               style={localStyles.closeButton}
@@ -304,115 +323,144 @@ export default function AdminEstadisticScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <Text style={estadisticStyles.headerTitle}>Dashboard Admin</Text>
-        <Text style={estadisticStyles.headerSubtitle}>
-          Bienvenido, {user?.username}
-        </Text>
+        <View style={localStyles.headerSimpleRow}>
+          <View>
+            <Text style={estadisticStyles.headerTitle}>Panel de Control</Text>
+            <View style={localStyles.userTag}>
+              <Ionicons
+                name="person-circle-outline"
+                size={14}
+                color="#64748B"
+              />
+              <Text style={localStyles.userTagText}>{user?.username}</Text>
+            </View>
+          </View>
+
+          {/* Icono de contexto: Indica que esta es la sección de métricas */}
+          <View style={localStyles.contextIconCircle}>
+            <Ionicons name="stats-chart" size={20} color="#2563EB" />
+          </View>
+        </View>
 
         {/* TARJETA PERSISTENTE (Lo que queda cuando cierras el modal) */}
+
         <View
           style={{
             backgroundColor: aiColor,
-            padding: 15,
+            padding: 16,
             borderRadius: 12,
             borderLeftWidth: 5,
             borderLeftColor: aiBorder,
             marginBottom: 15,
             marginTop: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
             elevation: 2,
           }}
         >
+          {/* NIVEL 1: Fila superior (Icono + Título + Botón) */}
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "flex-start",
+              marginBottom: 5, // Espacio entre el header y el mensaje de abajo
             }}
           >
-            <View style={{ flex: 1, paddingRight: 10 }}>
-              <View
+            {/* Contenedor del Título (Se encoge si choca con el botón) */}
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "flex-start",
+                paddingRight: 10,
+              }}
+            >
+              <Ionicons
+                name="sparkles-sharp"
+                size={18}
+                color={aiText}
+                style={{ marginRight: 8, marginTop: 2 }}
+              />
+              <Text
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 5,
+                  fontWeight: "700",
+                  fontSize: 16,
+                  color: aiText,
+                  lineHeight: 20,
+                  flex: 1, // Esto obliga al título a saltar de línea si llega al botón
                 }}
               >
-                <Text style={{ fontSize: 16, marginRight: 5 }}>✨</Text>
-                <Text
-                  style={{ fontWeight: "bold", fontSize: 16, color: aiText }}
-                >
-                  {ai?.titulo || "Análisis Inteligente"}
-                </Text>
-              </View>
-              <Text style={{ color: aiText, fontSize: 14, lineHeight: 20 }}>
-                {ai?.mensaje || "Presiona para generar reporte."}
+                {ai?.titulo || "Análisis Inteligente"}
               </Text>
             </View>
+
+            {/* Botón Generar (Posición fija a la derecha) */}
             <TouchableOpacity
               onPress={handleGenerateAI}
               disabled={aiLoading}
               style={{
                 backgroundColor: "white",
-                paddingHorizontal: 15,
-                paddingVertical: 10,
-                borderRadius: 25,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 20,
                 borderWidth: 1,
                 borderColor: aiBorder,
-                opacity: aiLoading ? 0.7 : 1,
-                justifyContent: "center",
+                minWidth: 85,
                 alignItems: "center",
+                opacity: aiLoading ? 0.7 : 1,
               }}
             >
               {aiLoading ? (
                 <ActivityIndicator size="small" color={aiBorder} />
               ) : (
                 <Text
-                  style={{ color: aiBorder, fontWeight: "bold", fontSize: 12 }}
+                  style={{ color: aiBorder, fontWeight: "800", fontSize: 11 }}
                 >
-                  Generar
+                  GENERAR
                 </Text>
               )}
             </TouchableOpacity>
           </View>
+
+          {/* NIVEL 2: Mensaje inferior (Ocupa todo el ancho disponible) */}
+          <Text
+            style={{
+              color: aiText,
+              fontSize: 14,
+              lineHeight: 20,
+              opacity: 0.9,
+              width: "100%", // Asegura que use todo el ancho de la tarjeta
+            }}
+          >
+            {ai?.mensaje || "Presiona para generar reporte."}
+          </Text>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            marginBottom: 10,
-            backgroundColor: "white",
-            padding: 5,
-            borderRadius: 12,
-          }}
-        >
-          {["dia", "semana", "mes", "historico"].map((f) => (
-            <TouchableOpacity
-              key={f}
-              onPress={() => handleFilterChange("time", f)}
-              style={{
-                paddingVertical: 8,
-                backgroundColor: timeFilter === f ? "#2563EB" : "transparent",
-                borderRadius: 10,
-                flex: 1,
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: timeFilter === f ? "white" : "#64748B",
-                  fontWeight: "600",
-                  fontSize: 12,
-                  textTransform: "capitalize",
-                }}
+        <View style={localStyles.segmentContainer}>
+          {Object.keys(filterLabels).map((f) => {
+            const isActive = timeFilter === f;
+            return (
+              <TouchableOpacity
+                key={f}
+                activeOpacity={0.7}
+                onPress={() => handleFilterChange("time", f)}
+                style={[
+                  localStyles.segmentButton,
+                  isActive && localStyles.activeSegmentButton,
+                  // Si quieres usar el color dinámico de tu IA:
+                  // isActive && { backgroundColor: aiColor }
+                ]}
               >
-                {f === "historico" ? "Total" : f}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    localStyles.segmentText,
+                    isActive && localStyles.activeSegmentText,
+                  ]}
+                >
+                  {filterLabels[f]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={estadisticStyles.kpiContainer}>
@@ -633,5 +681,69 @@ const localStyles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
+  },
+
+  //encabexado
+  headerSimpleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 1, // Espacio para que respiren las tarjetas de abajo
+    marginTop: 1,
+  },
+  userTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  userTagText: {
+    fontSize: 13,
+    color: "#64748B",
+    marginLeft: 6,
+    fontWeight: "500",
+  },
+  contextIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#EFF6FF", // Azul pálido muy suave
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#DBEAFE",
+  },
+
+  // fechas:
+  segmentContainer: {
+    flexDirection: "row",
+    backgroundColor: "#F1F5F9",
+    padding: 4,
+    borderRadius: 14,
+    marginBottom: 8,
+    marginTop: -5,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+  },
+  activeSegmentButton: {
+    backgroundColor: "#2563EB", // El azul fuerte que elegiste
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#64748B",
+  },
+  activeSegmentText: {
+    color: "white", // ¡Aquí está el cambio!
+    fontWeight: "700",
   },
 });
