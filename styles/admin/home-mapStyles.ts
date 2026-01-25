@@ -96,25 +96,28 @@ export const homeMapStyles = StyleSheet.create({
   },
   
   // Leyenda de prioridades
-  legendContainer: {
+legendContainer: {
     position: 'absolute',
-    top: 20,
+    top: 110, // Un poco más abajo del header
     left: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 12,
-    padding: 16,
-    width: 180,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Efecto translúcido
+    padding: 15,
+    borderRadius: 20,
+    width: 160,
+    // Sombra más suave y difusa (moderna)
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 10,
+    elevation: 5,
   },
   legendTitle: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: '800', // Montserrat Bold
     color: '#1e293b',
-    marginBottom: 12,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   legendItem: {
     flexDirection: 'row',
