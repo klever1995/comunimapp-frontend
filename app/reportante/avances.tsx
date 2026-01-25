@@ -1,12 +1,14 @@
 import { SafeArea } from '@/components/ui/safe-area';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { collection, doc, getDoc, onSnapshot, query, Timestamp, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Modal,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -14,11 +16,11 @@ import {
 } from 'react-native';
 import { avanceStyles } from '../../styles/reportante/avanceStyles';
 
-// Tipos basados en Firestore
+// Tipos basados en Firestore - CORREGIDO (quitar 'comentario' si no existe)
 type CaseUpdate = {
   id: string;
   message: string;
-  update_type: 'avance' | 'cambio_estado' | 'comentario';
+  update_type: 'avance' | 'cambio_estado' | 'observacion'; // QUITADO 'comentario'
   new_status?: string;
   images: string[];
   created_at: string;
@@ -41,35 +43,39 @@ export default function AvancesScreen() {
   const { reportId } = useLocalSearchParams<{ reportId: string }>();
   const { authState } = useAuth();
   const { user } = authState;
+
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
   
   const [updates, setUpdates] = useState<CaseUpdate[]>([]);
   const [reportInfo, setReportInfo] = useState<ReportInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Función para obtener el icono según el tipo de actualización
+  // Función para obtener el icono según el tipo de actualización - CORREGIDO
   const getUpdateTypeIcon = (type: string) => {
     switch (type) {
       case 'avance':
         return require('@/assets/images/check.png');
       case 'cambio_estado':
-        return require('@/assets/images/filtrar.png');
-      case 'comentario':
-        return require('@/assets/images/nombre.png');
+        return require('@/assets/images/recarga.png');
+      case 'observacion': // SOLO 3 TIPOS
+        return require('@/assets/images/ver.png');
       default:
         return require('@/assets/images/check.png');
     }
   };
 
-  // Función para obtener texto amigable del tipo de actualización
+  // Función para obtener texto amigable del tipo de actualización - CORREGIDO
   const getUpdateTypeText = (type: string) => {
     switch (type) {
       case 'avance':
         return 'Avance';
       case 'cambio_estado':
         return 'Cambio de estado';
-      case 'comentario':
-        return 'Comentario';
+      case 'observacion': // SOLO 3 TIPOS
+        return 'Observación';
       default:
         return type;
     }
@@ -78,12 +84,10 @@ export default function AvancesScreen() {
   // Función para formatear fecha
   const formatDate = (dateString: string) => {
     try {
-      // Si es un string ISO
       const date = new Date(dateString);
       return date.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: 'short',
-        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       });
@@ -91,6 +95,13 @@ export default function AvancesScreen() {
       return 'Fecha inválida';
     }
   };
+
+  // Función para abrir visor de imágenes
+const openImageGallery = (images: string[], startIndex: number) => {
+  setSelectedImages(images);
+  setSelectedImageIndex(startIndex);
+  setShowImageModal(true);
+};
 
   // Función para obtener el color según el estado
   const getStatusColor = (status: string) => {
@@ -103,6 +114,27 @@ export default function AvancesScreen() {
         return '#22c55e';
       case 'cancelado':
         return '#dc2626';
+      default:
+        return '#64748b';
+    }
+  };
+
+  // Calcular conteos por tipo de actualización - CORREGIDO (SOLO 3)
+  const updateTypeCounts = {
+    avance: updates.filter(u => u.update_type === 'avance').length,
+    cambio_estado: updates.filter(u => u.update_type === 'cambio_estado').length,
+    observacion: updates.filter(u => u.update_type === 'observacion').length, // SOLO 3
+  };
+
+  // Función para obtener color según tipo de actualización - CORREGIDO
+  const getUpdateTypeColor = (type: string) => {
+    switch (type) {
+      case 'avance':
+        return '#2563EB'; // Azul
+      case 'cambio_estado':
+        return '#f97316'; // Naranja
+      case 'observacion': // SOLO 3
+        return '#8b5cf6'; // Violeta
       default:
         return '#64748b';
     }
@@ -152,7 +184,7 @@ export default function AvancesScreen() {
     loadReportInfo();
   }, [reportId, user?.id]);
 
-  // Efecto para escuchar actualizaciones en tiempo real
+  // Efecto para escuchar actualizaciones en tiempo real - CORREGIDO (SOLO 3 TIPOS)
   useEffect(() => {
     if (!reportId) return;
 
@@ -173,7 +205,7 @@ export default function AvancesScreen() {
         querySnapshot.forEach((doc) => {
           const data = doc.data() as {
             message?: string;
-            update_type?: 'avance' | 'cambio_estado' | 'comentario';
+            update_type?: 'avance' | 'cambio_estado' | 'observacion'; // SOLO 3
             new_status?: string;
             images?: string[];
             created_at?: Timestamp;
@@ -181,7 +213,6 @@ export default function AvancesScreen() {
             encargado_id?: string;
           };
           
-          // CORRECCIÓN DEFINITIVA: Tipado explícito con Timestamp
           const createdAt = data.created_at instanceof Timestamp 
             ? data.created_at.toDate().toISOString() 
             : new Date().toISOString();
@@ -250,152 +281,305 @@ export default function AvancesScreen() {
 
   return (
     <SafeArea>
-      <ScrollView 
-        contentContainerStyle={avanceStyles.scrollContent}
-        style={avanceStyles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={avanceStyles.header}>
-          <Text style={avanceStyles.title}>Avances del Reporte</Text>
-          <Text style={avanceStyles.subtitle}>
+      <View style={avanceStyles.container}>
+        {/* Header con gradiente */}
+        <LinearGradient
+          colors={['#667eea', '#764ba2']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={avanceStyles.headerContainer}
+        >
+          <Text style={avanceStyles.headerTitle}>Avances del Reporte</Text>
+          <Text style={avanceStyles.headerSubtitle}>
             Seguimiento de las actualizaciones realizadas por el encargado
           </Text>
+        </LinearGradient>
+
+        {/* 3 Cards de tipos de actualización - CORREGIDO (SOLO 3) */}
+        <View style={avanceStyles.statsContainer}>
+          {/* Card Avances */}
+          <View style={[avanceStyles.statCard, { borderColor: getUpdateTypeColor('avance') }]}>
+            <Text style={[avanceStyles.statValue, { color: getUpdateTypeColor('avance') }]}>
+              {updateTypeCounts.avance}
+            </Text>
+            <Text style={[avanceStyles.statLabel, { color: getUpdateTypeColor('avance') }]}>
+              Avances
+            </Text>
+          </View>
+          
+          {/* Card Cambios de Estado */}
+          <View style={[avanceStyles.statCard, { borderColor: getUpdateTypeColor('cambio_estado') }]}>
+            <Text style={[avanceStyles.statValue, { color: getUpdateTypeColor('cambio_estado') }]}>
+              {updateTypeCounts.cambio_estado}
+            </Text>
+            <Text style={[avanceStyles.statLabel, { color: getUpdateTypeColor('cambio_estado') }]}>
+              Cambios
+            </Text>
+          </View>
+          
+          {/* Card Observaciones - AHORA ES LA TERCERA */}
+          <View style={[avanceStyles.statCard, { borderColor: getUpdateTypeColor('observacion') }]}>
+            <Text style={[avanceStyles.statValue, { color: getUpdateTypeColor('observacion') }]}>
+              {updateTypeCounts.observacion}
+            </Text>
+            <Text style={[avanceStyles.statLabel, { color: getUpdateTypeColor('observacion') }]}>
+              Observación
+            </Text>
+          </View>
         </View>
 
-        {/* Información del reporte */}
-        {reportInfo && (
-          <View style={avanceStyles.reportInfoCard}>
-            <View style={avanceStyles.reportInfoHeader}>
-              <Image
-                source={require('@/assets/images/location.png')}
-                style={avanceStyles.locationIcon}
-              />
-              <Text style={avanceStyles.reportLocation}>
-                {reportInfo.location.address}
-                {reportInfo.location.city ? `, ${reportInfo.location.city}` : ''}
-              </Text>
-            </View>
-
-            <Text style={avanceStyles.reportDescription}>
-              {reportInfo.description}
-            </Text>
-
-            <View style={avanceStyles.reportStatusContainer}>
-              <Text style={avanceStyles.statusLabel}>Estado actual:</Text>
-              <Text 
-                style={[
-                  avanceStyles.statusValue,
-                  { color: getStatusColor(reportInfo.status) }
-                ]}
-              >
-                {reportInfo.status.replace('_', ' ')}
-              </Text>
-            </View>
-
-            {reportInfo.assigned_to && (
-              <View style={[avanceStyles.reportStatusContainer, { paddingTop: 8, borderTopWidth: 0 }]}>
-                <Text style={avanceStyles.statusLabel}>Asignado a:</Text>
-                <Text style={[avanceStyles.statusValue, { color: '#64748b' }]}>
-                  Encargado
+        <ScrollView 
+          contentContainerStyle={avanceStyles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Información del reporte */}
+          {reportInfo && (
+            <View style={avanceStyles.reportInfoCard}>
+              <View style={avanceStyles.reportInfoHeader}>
+                <Image
+                  source={require('@/assets/images/location.png')}
+                  style={avanceStyles.locationIcon}
+                />
+                <Text style={avanceStyles.reportLocation}>
+                  {reportInfo.location.address}
+                  {reportInfo.location.city ? `, ${reportInfo.location.city}` : ''}
                 </Text>
               </View>
-            )}
-          </View>
-        )}
 
-        {/* Lista de avances */}
-        <View style={avanceStyles.updatesList}>
-          {updates.length === 0 ? (
-            <View style={avanceStyles.emptyContainer}>
-              <Text style={avanceStyles.emptyText}>
-                No hay avances registrados para este reporte
-                {'\n'}
-                <Text style={{ fontSize: 14 }}>
-                  El encargado aún no ha realizado actualizaciones
-                </Text>
+              <Text style={avanceStyles.reportDescription}>
+                {reportInfo.description}
               </Text>
-            </View>
-          ) : (
-            updates.map((update) => (
-              <View key={update.id} style={avanceStyles.updateCard}>
-                {/* Encabezado con tipo y fecha */}
-                <View style={avanceStyles.updateHeader}>
-                  <View style={avanceStyles.updateTypeContainer}>
-                    <Image
-                      source={getUpdateTypeIcon(update.update_type)}
-                      style={avanceStyles.updateIcon}
-                    />
-                    <Text style={avanceStyles.updateTypeText}>
-                      {getUpdateTypeText(update.update_type)}
-                    </Text>
-                  </View>
-                  <Text style={avanceStyles.updateDate}>
-                    {formatDate(update.created_at)}
+
+              <View style={avanceStyles.reportStatusContainer}>
+                <Text style={avanceStyles.statusLabel}>Estado actual:</Text>
+                <Text 
+                  style={[
+                    avanceStyles.statusValue,
+                    { color: getStatusColor(reportInfo.status) }
+                  ]}
+                >
+                  {reportInfo.status.replace('_', ' ')}
+                </Text>
+              </View>
+
+              {reportInfo.assigned_to && (
+                <View style={[avanceStyles.reportStatusContainer, { paddingTop: 8, borderTopWidth: 0 }]}>
+                  <Text style={avanceStyles.statusLabel}>Asignado a:</Text>
+                  <Text style={[avanceStyles.statusValue, { color: '#64748b' }]}>
+                    Encargado
                   </Text>
                 </View>
+              )}
+            </View>
+          )}
 
-                {/* Mensaje */}
-                {update.message && (
-                  <Text style={avanceStyles.updateMessage}>
-                    {update.message}
+          {/* Contador de resultados */}
+          <View style={avanceStyles.resultsCounter}>
+            <Text style={avanceStyles.resultsCounterText}>
+              {updates.length} {updates.length === 1 ? 'actualización' : 'actualizaciones'} en total
+            </Text>
+          </View>
+
+          {/* Lista de avances */}
+          <View style={avanceStyles.updatesList}>
+            {updates.length === 0 ? (
+              <View style={avanceStyles.emptyContainer}>
+                <Text style={avanceStyles.emptyText}>
+                  No hay avances registrados para este reporte
+                  {'\n'}
+                  <Text style={{ fontSize: 14 }}>
+                    El encargado aún no ha realizado actualizaciones
                   </Text>
-                )}
-
-                {/* Cambio de estado (si aplica) */}
-                {update.new_status && (
-                  <View style={avanceStyles.statusChangeContainer}>
-                    <Image
-                      source={require('@/assets/images/filtrar.png')}
-                      style={avanceStyles.statusChangeIcon}
-                    />
-                    <Text style={avanceStyles.statusChangeText}>
-                      Estado cambiado a: {update.new_status.replace('_', ' ')}
-                    </Text>
+                </Text>
+              </View>
+            ) : (
+              updates.map((update) => (
+                <View 
+                  key={update.id} 
+                  style={[
+                    avanceStyles.updateCard,
+                    { 
+                      borderLeftWidth: 5, // LÍNEA VERTICAL A LA DERECHA
+                      borderLeftColor: getUpdateTypeColor(update.update_type),
+                      borderRightWidth: 0, // Asegurar que solo sea izquierda
+                    }
+                  ]}
+                >
+                  {/* Encabezado con tipo y fecha - AHORA CON ICONO AL LADO DEL TEXTO */}
+                  <View style={avanceStyles.updateHeader}>
+                    <View style={avanceStyles.updateTypeContainer}>
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: `${getUpdateTypeColor(update.update_type)}15`, // Color con transparencia
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 20,
+                        alignSelf: 'flex-start'
+                      }}>
+                        <Image
+                          source={getUpdateTypeIcon(update.update_type)}
+                          style={[avanceStyles.updateIcon, { 
+                            tintColor: getUpdateTypeColor(update.update_type),
+                            marginRight: 6 
+                          }]}
+                        />
+                        <Text style={[
+                          avanceStyles.updateTypeText,
+                          { color: getUpdateTypeColor(update.update_type) }
+                        ]}>
+                          {getUpdateTypeText(update.update_type)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={avanceStyles.dateContainer}>
+                      <Image
+                        source={require('@/assets/images/calendar.png')}
+                        style={avanceStyles.dateIcon}
+                      />
+                      <Text style={avanceStyles.dateText}>
+                        {formatDate(update.created_at)}
+                      </Text>
+                    </View>
                   </View>
-                )}
 
-                {/* Imágenes (si hay) */}
-                {update.images && update.images.length > 0 && (
+                  {/* Mensaje */}
+                  {update.message && (
+                    <Text style={avanceStyles.updateMessage}>
+                      {update.message}
+                    </Text>
+                  )}
+
+                  {/* Cambio de estado (si aplica) */}
+                  {update.new_status && (
+                    <View style={avanceStyles.statusChangeContainer}>
+                      <Image
+                        source={require('@/assets/images/recordatorio.png')}
+                        style={avanceStyles.statusChangeIcon}
+                      />
+                      <Text style={avanceStyles.statusChangeText}>
+                        Estado cambiado a: {update.new_status.replace('_', ' ')}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Imágenes (si hay) */}
+                  {update.images && update.images.length > 0 && (
                   <View style={avanceStyles.imagesContainer}>
                     {update.images.map((img, imgIndex) => (
-                      <Image
+                      <TouchableOpacity
                         key={imgIndex}
-                        source={{ uri: img }}
-                        style={avanceStyles.imageThumbnail}
-                      />
+                        onPress={() => openImageGallery(update.images, imgIndex)}
+                        activeOpacity={0.7}
+                      >
+                        <Image
+                          source={{ uri: img }}
+                          style={avanceStyles.imageThumbnail}
+                        />
+                      </TouchableOpacity>
                     ))}
                   </View>
                 )}
 
-                {/* Información del encargado (si existe) */}
-                {update.encargado_id && (
-                  <View style={{ 
-                    flexDirection: 'row', 
-                    alignItems: 'center', 
-                    marginTop: 12,
-                    paddingTop: 12,
-                    borderTopWidth: 1,
-                    borderTopColor: '#e2e8f0'
-                  }}>
-                    <Image
-                      source={require('@/assets/images/nombre.png')}
-                      style={{ width: 16, height: 16, marginRight: 6 }}
-                    />
-                    <Text style={{
-                      fontFamily: 'Montserrat_400Regular',
-                      fontSize: 12,
-                      color: '#64748b'
+                  {/* Información del encargado (si existe) */}
+                  {update.encargado_id && (
+                    <View style={{ 
+                      flexDirection: 'row', 
+                      alignItems: 'center', 
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTopWidth: 1,
+                      borderTopColor: '#e2e8f0'
                     }}>
-                      Actualizado por el encargado
-                    </Text>
-                  </View>
-                )}
-              </View>
-            ))
+                      <Image
+                        source={require('@/assets/images/nombre.png')}
+                        style={{ width: 16, height: 16, marginRight: 6 }}
+                      />
+                      <Text style={{
+                        fontFamily: 'Montserrat_400Regular',
+                        fontSize: 12,
+                        color: '#64748b'
+                      }}>
+                        Actualizado por el encargado
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))
+            )}
+          </View>
+        </ScrollView>
+      </View>
+      {/* Modal para visor de imágenes */}
+<Modal
+  visible={showImageModal}
+  transparent={true}
+  animationType="fade"
+  onRequestClose={() => setShowImageModal(false)}
+>
+  <View style={{
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }}>
+    <TouchableOpacity
+      style={{
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 10,
+        padding: 10,
+      }}
+      onPress={() => setShowImageModal(false)}
+    >
+      <Text style={{ color: '#FFFFFF', fontSize: 24 }}>✕</Text>
+    </TouchableOpacity>
+    
+    {selectedImages.length > 0 && (
+      <Image
+        source={{ uri: selectedImages[selectedImageIndex] }}
+        style={{
+          width: '95%',
+          height: '70%',
+          resizeMode: 'contain',
+        }}
+      />
+    )}
+    
+    {selectedImages.length > 1 && (
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+        gap: 20,
+      }}>
+        <TouchableOpacity
+          onPress={() => setSelectedImageIndex(prev => 
+            prev > 0 ? prev - 1 : selectedImages.length - 1
           )}
-        </View>
-      </ScrollView>
+          disabled={selectedImages.length <= 1}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 24 }}>◀</Text>
+        </TouchableOpacity>
+        
+        <Text style={{ color: '#FFFFFF', fontSize: 16 }}>
+          {selectedImageIndex + 1} / {selectedImages.length}
+        </Text>
+        
+        <TouchableOpacity
+          onPress={() => setSelectedImageIndex(prev => 
+            prev < selectedImages.length - 1 ? prev + 1 : 0
+          )}
+          disabled={selectedImages.length <= 1}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 24 }}>▶</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </View>
+</Modal>
     </SafeArea>
   );
 }

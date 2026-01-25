@@ -1,7 +1,7 @@
-// app/admin/create-user.tsx - VERSIÓN CORREGIDA
 import { SafeArea } from '@/components/ui/safe-area';
 import { useAuth } from '@/hooks/useAuth';
-import { createUserStyles } from '@/styles/admin/create-userStyles';
+import { registerStyles } from '@/styles/registerStyles';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -22,19 +22,16 @@ type UserRole = 'admin' | 'encargado' | 'reportante';
 export default function AdminCreateUserScreen() {
   const { authState: { token } } = useAuth();
   
-  // Estados básicos (ELIMINADO: nombreCompleto)
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>('reportante');
   
-  // Estados específicos para encargado
   const [organization, setOrganization] = useState('');
   const [phone, setPhone] = useState('');
   const [zone, setZone] = useState('');
   
-  // Estados de UI
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -50,7 +47,7 @@ export default function AdminCreateUserScreen() {
 
   const getRoleColor = (role: UserRole) => {
     switch (role) {
-      case 'admin': return '#2563EB';
+      case 'admin': return '#00D4FF';
       case 'encargado': return '#F97316';
       case 'reportante': return '#10B981';
       default: return '#64748b';
@@ -58,7 +55,6 @@ export default function AdminCreateUserScreen() {
   };
 
   const handleRegister = async () => {
-    // Validaciones básicas (ELIMINADO: nombreCompleto)
     if (!email.trim() || !username.trim() || !password.trim() || !confirmPassword.trim()) {
       Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
       return;
@@ -74,14 +70,12 @@ export default function AdminCreateUserScreen() {
       return;
     }
 
-    // Validación de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Error', 'Por favor ingresa un correo electrónico válido');
       return;
     }
 
-    // Validaciones específicas por rol
     if (selectedRole === 'encargado' && !organization.trim()) {
       Alert.alert('Error', 'Los encargados deben proporcionar una organización');
       return;
@@ -95,10 +89,8 @@ export default function AdminCreateUserScreen() {
         username: username,
         email: email,
         password: password,
-        // ELIMINADO: nombre_completo
       };
 
-      // Agregar campos específicos según rol
       switch (selectedRole) {
         case 'admin':
           endpoint = '/register/admin';
@@ -166,293 +158,321 @@ export default function AdminCreateUserScreen() {
 
   return (
     <SafeArea>
+    <View style={[registerStyles.container, { paddingBottom: 0 }]}>
+      <LinearGradient
+        colors={['#0A0F24', '#0D1B2A', '#1B263B']}
+        style={registerStyles.backgroundGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      
+      <View style={registerStyles.particlesContainer}>
+        <View style={registerStyles.particle1} />
+        <View style={registerStyles.particle2} />
+        <View style={registerStyles.particle3} />
+      </View>
+
+      <View style={registerStyles.header}>
+        <Text style={registerStyles.title}>
+          Crear <Text style={registerStyles.titleGradient}>Usuario</Text>
+        </Text>
+        <Text style={registerStyles.subtitle}>
+          Completa el formulario para registrar un nuevo usuario en el sistema
+        </Text>
+      </View>
+
       <KeyboardAwareScrollView
-        contentContainerStyle={createUserStyles.scrollContent}
+        contentContainerStyle={{ paddingBottom: 20 }}
         keyboardShouldPersistTaps="handled"
         enableOnAndroid
         extraScrollHeight={20}
         showsVerticalScrollIndicator={false}
-        style={createUserStyles.container}
+        style={{ flex: 1 }}
       >
-        {/* Header */}
-        <View style={createUserStyles.header}>
-          <Text style={createUserStyles.title}>Crear Nuevo Usuario</Text>
-          <Text style={createUserStyles.subtitle}>
-            Completa el formulario para registrar un nuevo usuario en el sistema
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>TIPO DE USUARIO</Text>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+            {(['reportante', 'encargado', 'admin'] as UserRole[]).map((role) => (
+              <TouchableOpacity
+                key={role}
+                style={{
+                  flex: 1,
+                  backgroundColor: selectedRole === role 
+                    ? getRoleColor(role) === '#00D4FF' ? 'rgba(0, 212, 255, 0.1)' 
+                    : getRoleColor(role) === '#F97316' ? 'rgba(249, 115, 22, 0.1)' 
+                    : 'rgba(16, 185, 129, 0.1)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  borderWidth: 1,
+                  borderColor: selectedRole === role 
+                    ? getRoleColor(role) 
+                    : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 12,
+                  padding: 12,
+                  alignItems: 'center'
+                }}
+                onPress={() => setSelectedRole(role)}
+                disabled={isLoading}
+              >
+                <Text style={{
+                  fontFamily: selectedRole === role ? 'Roboto_600SemiBold' : 'Roboto_500Medium',
+                  fontSize: 13,
+                  color: selectedRole === role ? getRoleColor(role) : '#94A3B8',
+                  textAlign: 'center'
+                }}>
+                  {getRoleText(role)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <Text style={[registerStyles.inputLabel, { marginTop: 20, marginBottom: 12 }]}>
+          INFORMACIÓN BÁSICA
+        </Text>
+
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>NOMBRE DE USUARIO</Text>
+          <View style={registerStyles.inputContainer}>
+            <Image
+              source={require('@/assets/images/nombre.png')}
+              style={registerStyles.leftIcon}
+              resizeMode="contain"
+            />
+            <TextInput
+              style={registerStyles.input}
+              placeholder="Ingresa el nombre de usuario"
+              placeholderTextColor="#64748B"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+          </View>
+        </View>
+
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>CORREO ELECTRÓNICO</Text>
+          <View style={registerStyles.inputContainer}>
+            <Image
+              source={require('@/assets/images/correo.png')}
+              style={registerStyles.leftIcon}
+              resizeMode="contain"
+            />
+            <TextInput
+              style={registerStyles.input}
+              placeholder="correo@ejemplo.com"
+              placeholderTextColor="#64748B"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!isLoading}
+            />
+          </View>
+        </View>
+
+        {selectedRole === 'encargado' && (
+          <>
+            <Text style={[registerStyles.inputLabel, { marginTop: 20, marginBottom: 12 }]}>
+              INFORMACIÓN DE ENCARGADO
+            </Text>
+
+            <View style={registerStyles.inputGroup}>
+              <Text style={registerStyles.inputLabel}>ORGANIZACIÓN</Text>
+              <View style={registerStyles.inputContainer}>
+                <Image
+                  source={require('@/assets/images/organization.png')}
+                  style={registerStyles.leftIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={registerStyles.input}
+                  placeholder="Nombre de la organización"
+                  placeholderTextColor="#64748B"
+                  value={organization}
+                  onChangeText={setOrganization}
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            <View style={registerStyles.inputGroup}>
+              <Text style={registerStyles.inputLabel}>TELÉFONO</Text>
+              <View style={registerStyles.inputContainer}>
+                <Image
+                  source={require('@/assets/images/phone.png')}
+                  style={registerStyles.leftIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={registerStyles.input}
+                  placeholder="Número de teléfono"
+                  placeholderTextColor="#64748B"
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            <View style={registerStyles.inputGroup}>
+              <Text style={registerStyles.inputLabel}>ZONA ASIGNADA</Text>
+              <View style={registerStyles.inputContainer}>
+                <Image
+                  source={require('@/assets/images/location.png')}
+                  style={registerStyles.leftIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={registerStyles.input}
+                  placeholder="Zona o sector asignado"
+                  placeholderTextColor="#64748B"
+                  value={zone}
+                  onChangeText={setZone}
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+          </>
+        )}
+
+        <Text style={[registerStyles.inputLabel, { marginTop: 20, marginBottom: 12 }]}>
+          SEGURIDAD
+        </Text>
+
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>CONTRASEÑA</Text>
+          <View style={registerStyles.inputContainer}>
+            <Image
+              source={require('@/assets/images/contraseña.png')}
+              style={registerStyles.leftIcon}
+              resizeMode="contain"
+            />
+            <TextInput
+              style={registerStyles.input}
+              placeholder="Ingresa la contraseña"
+              placeholderTextColor="#64748B"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              editable={!isLoading}
+            />
+            <TouchableOpacity
+              style={registerStyles.eyeButton}
+              onPress={toggleShowPassword}
+              disabled={isLoading}
+            >
+              <Image
+                source={showPassword
+                  ? require('@/assets/images/ver.png')
+                  : require('@/assets/images/no_ver.png')
+                }
+                style={registerStyles.eyeIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>CONFIRMAR CONTRASEÑA</Text>
+          <View style={registerStyles.inputContainer}>
+            <Image
+              source={require('@/assets/images/contraseña.png')}
+              style={registerStyles.leftIcon}
+              resizeMode="contain"
+            />
+            <TextInput
+              style={registerStyles.input}
+              placeholder="Confirma la contraseña"
+              placeholderTextColor="#64748B"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+              editable={!isLoading}
+            />
+            <TouchableOpacity
+              style={registerStyles.eyeButton}
+              onPress={toggleShowConfirmPassword}
+              disabled={isLoading}
+            >
+              <Image
+                source={showConfirmPassword
+                  ? require('@/assets/images/ver.png')
+                  : require('@/assets/images/no_ver.png')
+                }
+                style={registerStyles.eyeIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={[registerStyles.securityContainer, { marginTop: 20 }]}>
+          <Text style={registerStyles.securityText}>
+            Campos obligatorios
+          </Text>
+          <Text style={[registerStyles.securityText, { marginTop: 8 }]}>
+            Los usuarios {selectedRole !== 'admin' ? 'recibirán un correo de verificación' : 'admin no requieren verificación'}
           </Text>
         </View>
 
-        {/* Formulario */}
-        <View style={createUserStyles.formContainer}>
-          {/* Selector de Rol */}
-          <View style={createUserStyles.inputGroup}>
-            <Text style={createUserStyles.inputLabel}>Tipo de Usuario *</Text>
-            <View style={createUserStyles.roleSelector}>
-              {(['reportante', 'encargado', 'admin'] as UserRole[]).map((role) => (
-                <TouchableOpacity
-                  key={role}
-                  style={[
-                    createUserStyles.roleButton,
-                    selectedRole === role && {
-                      backgroundColor: getRoleColor(role),
-                      borderColor: getRoleColor(role),
-                    }
-                  ]}
-                  onPress={() => setSelectedRole(role)}
-                  disabled={isLoading}
-                >
-                  <Text style={[
-                    createUserStyles.roleButtonText,
-                    selectedRole === role && createUserStyles.roleButtonTextActive
-                  ]}>
-                    {getRoleText(role)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 30, marginHorizontal: 20 }}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: 14,
+              paddingVertical: 16,
+              alignItems: 'center'
+            }}
+            onPress={handleCancel}
+            disabled={isLoading}
+          >
+            <Text style={{
+              fontFamily: 'Roboto_600SemiBold',
+              fontSize: 16,
+              color: '#94A3B8'
+            }}>
+              Cancelar
+            </Text>
+          </TouchableOpacity>
 
-          {/* Información Básica */}
-          <View style={createUserStyles.sectionTitle}>
-            <Text style={createUserStyles.sectionTitleText}>Información Básica</Text>
-          </View>
-
-          {/* Nombre de usuario (ÚNICO campo de nombre) */}
-          <View style={createUserStyles.inputGroup}>
-            <Text style={createUserStyles.inputLabel}>Nombre de usuario *</Text>
-            <View style={createUserStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/nombre.png')}
-                style={createUserStyles.leftIcon}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={[createUserStyles.input, { paddingLeft: 44 }]}
-                placeholder="Ingresa el nombre de usuario"
-                placeholderTextColor="#94a3b8"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-            </View>
-          </View>
-
-          {/* Correo */}
-          <View style={createUserStyles.inputGroup}>
-            <Text style={createUserStyles.inputLabel}>Correo electrónico *</Text>
-            <View style={createUserStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/correo.png')}
-                style={createUserStyles.leftIcon}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={[createUserStyles.input, { paddingLeft: 44 }]}
-                placeholder="correo@ejemplo.com"
-                placeholderTextColor="#94a3b8"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                editable={!isLoading}
-              />
-            </View>
-          </View>
-
-          {/* Campos específicos para Encargado */}
-          {selectedRole === 'encargado' && (
-            <>
-              <View style={createUserStyles.sectionTitle}>
-                <Text style={createUserStyles.sectionTitleText}>Información de Encargado</Text>
-              </View>
-
-              {/* Organización (obligatorio para encargado) */}
-              <View style={createUserStyles.inputGroup}>
-                <Text style={createUserStyles.inputLabel}>Organización *</Text>
-                <View style={createUserStyles.inputWithIconContainer}>
-                  <Image
-                    source={require('@/assets/images/organization.png')}
-                    style={createUserStyles.leftIcon}
-                    resizeMode="contain"
-                  />
-                  <TextInput
-                    style={[createUserStyles.input, { paddingLeft: 44 }]}
-                    placeholder="Nombre de la organización"
-                    placeholderTextColor="#94a3b8"
-                    value={organization}
-                    onChangeText={setOrganization}
-                    editable={!isLoading}
-                  />
-                </View>
-              </View>
-
-              {/* Teléfono (opcional) */}
-              <View style={createUserStyles.inputGroup}>
-                <Text style={createUserStyles.inputLabel}>Teléfono</Text>
-                <View style={createUserStyles.inputWithIconContainer}>
-                  <Image
-                    source={require('@/assets/images/phone.png')}
-                    style={createUserStyles.leftIcon}
-                    resizeMode="contain"
-                  />
-                  <TextInput
-                    style={[createUserStyles.input, { paddingLeft: 44 }]}
-                    placeholder="Número de teléfono"
-                    placeholderTextColor="#94a3b8"
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                    editable={!isLoading}
-                  />
-                </View>
-              </View>
-
-              {/* Zona (opcional) */}
-              <View style={createUserStyles.inputGroup}>
-                <Text style={createUserStyles.inputLabel}>Zona asignada</Text>
-                <View style={createUserStyles.inputWithIconContainer}>
-                  <Image
-                    source={require('@/assets/images/location.png')}
-                    style={createUserStyles.leftIcon}
-                    resizeMode="contain"
-                  />
-                  <TextInput
-                    style={[createUserStyles.input, { paddingLeft: 44 }]}
-                    placeholder="Zona o sector asignado"
-                    placeholderTextColor="#94a3b8"
-                    value={zone}
-                    onChangeText={setZone}
-                    editable={!isLoading}
-                  />
-                </View>
-              </View>
-            </>
-          )}
-
-          {/* Contraseña */}
-          <View style={createUserStyles.sectionTitle}>
-            <Text style={createUserStyles.sectionTitleText}>Seguridad</Text>
-          </View>
-
-          {/* Contraseña */}
-          <View style={createUserStyles.inputGroup}>
-            <Text style={createUserStyles.inputLabel}>Contraseña *</Text>
-            <View style={createUserStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/contraseña.png')}
-                style={createUserStyles.leftIcon}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={[createUserStyles.input, { paddingLeft: 44, paddingRight: 44 }]}
-                placeholder="Ingresa la contraseña"
-                placeholderTextColor="#94a3b8"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                style={createUserStyles.eyeIconContainer}
-                onPress={toggleShowPassword}
-                disabled={isLoading}
-              >
-                <Image
-                  source={showPassword
-                    ? require('@/assets/images/ver.png')
-                    : require('@/assets/images/no_ver.png')
-                  }
-                  style={createUserStyles.eyeIcon}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Confirmar Contraseña */}
-          <View style={createUserStyles.inputGroup}>
-            <Text style={createUserStyles.inputLabel}>Confirmar Contraseña *</Text>
-            <View style={createUserStyles.inputWithIconContainer}>
-              <Image
-                source={require('@/assets/images/contraseña.png')}
-                style={createUserStyles.leftIcon}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={[createUserStyles.input, { paddingLeft: 44, paddingRight: 44 }]}
-                placeholder="Confirma la contraseña"
-                placeholderTextColor="#94a3b8"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                style={createUserStyles.eyeIconContainer}
-                onPress={toggleShowConfirmPassword}
-                disabled={isLoading}
-              >
-                <Image
-                  source={showConfirmPassword
-                    ? require('@/assets/images/ver.png')
-                    : require('@/assets/images/no_ver.png')
-                  }
-                  style={createUserStyles.eyeIcon}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={createUserStyles.divider} />
-
-          {/* Botones de acción */}
-          <View style={createUserStyles.actionsContainer}>
-            <TouchableOpacity
-              style={createUserStyles.cancelButton}
-              onPress={handleCancel}
-              disabled={isLoading}
-              activeOpacity={0.8}
-            >
-              <Text style={createUserStyles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                createUserStyles.createButton,
-                isLoading && createUserStyles.createButtonDisabled,
-                { backgroundColor: getRoleColor(selectedRole) }
-              ]}
-              onPress={handleRegister}
-              disabled={isLoading}
-              activeOpacity={0.8}
+          <TouchableOpacity
+            style={[
+              registerStyles.registerButton,
+              isLoading && registerStyles.registerButtonDisabled,
+              { flex: 2 }
+            ]}
+            onPress={handleRegister}
+            disabled={isLoading}
+          >
+            <LinearGradient
+              colors={isLoading ? ['#475569', '#475569'] : ['#00D4FF', '#0066FF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={registerStyles.buttonGradient}
             >
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <View style={createUserStyles.createButtonContent}>
-                  <Text style={createUserStyles.createButtonText}>Crear Usuario</Text>
+                <View style={registerStyles.buttonContent}>
+                  <Text style={registerStyles.buttonText}>CREAR USUARIO</Text>
                   <Image
                     source={require('@/assets/images/agregar.png')}
-                    style={createUserStyles.createIcon}
+                    style={registerStyles.buttonIcon}
                     resizeMode="contain"
                   />
                 </View>
               )}
-            </TouchableOpacity>
-          </View>
-
-          <View style={createUserStyles.securityContainer}>
-            <Text style={createUserStyles.securityText}>
-              * Campos obligatorios
-            </Text>
-            <Text style={[createUserStyles.securityText, { marginTop: 8 }]}>
-              Los usuarios {selectedRole !== 'admin' ? 'recibirán un correo de verificación' : 'admin no requieren verificación'}
-            </Text>
-          </View>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
+    </View>
     </SafeArea>
   );
 }

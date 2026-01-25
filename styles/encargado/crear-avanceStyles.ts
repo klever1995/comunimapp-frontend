@@ -1,99 +1,103 @@
+// app/styles/encargado/crear-avanceStyles.ts - VERSIÓN FUTURISTA
 import { StyleSheet } from 'react-native';
 
 export const crearAvanceStyles = StyleSheet.create({
-  // Contenedor principal
+  // Contenedor principal - FONDO OSCURO
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0A0F24',
   },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 30,
   },
   
-  // Header
+  // Header - ESTILO FUTURISTA
   header: {
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 10,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    backgroundColor: 'transparent',
   },
   headerTitle: {
     fontFamily: 'Roboto_700Bold',
     fontSize: 24,
-    color: '#1e293b',
+    color: '#FFFFFF',
     marginBottom: 5,
     textAlign: 'center',
   },
   headerSubtitle: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 14,
-    color: '#64748b',
+    color: '#94A3B8',
   },
   
-  // Sección de fotos
+  // Sección de fotos - ESTILO FUTURISTA
   photosSection: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    marginBottom: 20,
+    paddingTop: 15,
+    marginBottom: 15,
   },
   photosTitle: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#1e293b',
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#E2E8F0',
+    marginBottom: 12,
   },
   photosContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   addPhotoButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    backgroundColor: '#f8fafc',
+    width: 90,
+    height: 90,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addPhotoIcon: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     tintColor: '#94a3b8',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   addPhotoText: {
     fontFamily: 'Montserrat_500Medium',
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: 11,
+    color: '#94a3b8',
   },
   photoItem: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
+    width: 90,
+    height: 90,
+    borderRadius: 14,
     position: 'relative',
+    overflow: 'hidden',
   },
   photoImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 14,
   },
   removePhotoButton: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: -6,
+    right: -6,
     backgroundColor: '#ef4444',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   removePhotoText: {
     color: '#FFFFFF',
@@ -101,28 +105,28 @@ export const crearAvanceStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
   
-  // Sección de mensaje
+  // Sección de mensaje - ESTILO FUTURISTA
   messageSection: {
     paddingHorizontal: 20,
-    marginBottom: 25,
+    marginBottom: 20,
   },
   messageTitle: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#1e293b',
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#E2E8F0',
+    marginBottom: 10,
   },
   messageInput: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
     fontFamily: 'Montserrat_400Regular',
     fontSize: 15,
-    color: '#1e293b',
-    minHeight: 120,
+    color: '#FFFFFF',
+    minHeight: 100,
     textAlignVertical: 'top',
   },
   characterCount: {
@@ -130,25 +134,25 @@ export const crearAvanceStyles = StyleSheet.create({
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'right',
-    marginTop: 5,
+    marginTop: 6,
   },
   characterCountError: {
-    color: '#ef4444',
+    color: '#ff6b6b',
   },
   characterCountValid: {
-    color: '#22c55e',
+    color: '#00D4FF',
   },
   
-  // Sección de tipo de actualización - SOLO ESTO MODIFICADO
+  // Sección de tipo de actualización - ESTILO FUTURISTA
   updateTypeSection: {
     paddingHorizontal: 20,
-    marginBottom: 25,
+    marginBottom: 20,
   },
   updateTypeTitle: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#1e293b',
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#E2E8F0',
+    marginBottom: 12,
   },
   updateTypeOptions: {
     flexDirection: 'row',
@@ -157,52 +161,52 @@ export const crearAvanceStyles = StyleSheet.create({
   },
   updateTypeButton: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 14,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
-    minHeight: 110, // AÑADIDO: Altura mínima
+    minHeight: 110,
   },
   updateTypeButtonSelected: {
-    backgroundColor: '#dbeafe',
-    borderColor: '#2563EB',
+    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+    borderColor: '#00D4FF',
   },
   updateTypeIcon: {
     width: 24,
     height: 24,
     marginBottom: 8,
-    resizeMode: 'contain', // AÑADIDO
+    resizeMode: 'contain',
   },
   updateTypeLabel: {
     fontFamily: 'Montserrat_600SemiBold',
-    fontSize: 11, // REDUCIDO de 14 a 12
-    color: '#475569',
+    fontSize: 11,
+    color: '#94A3B8',
     marginBottom: 4,
-    textAlign: 'center', // AÑADIDO
-    width: '100%', // AÑADIDO
+    textAlign: 'center',
+    width: '100%',
   },
   updateTypeButtonSelectedText: {
-    color: '#2563EB',
+    color: '#FFFFFF',
   },
   updateTypeDescription: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 11,
-    color: '#94a3b8',
+    color: '#64748B',
     textAlign: 'center',
   },
   
-  // Sección de estado
+  // Sección de estado - ESTILO FUTURISTA
   statusSection: {
     paddingHorizontal: 20,
-    marginBottom: 25,
+    marginBottom: 20,
   },
   statusTitle: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#1e293b',
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#E2E8F0',
+    marginBottom: 12,
   },
   statusOptions: {
     flexDirection: 'row',
@@ -212,16 +216,16 @@ export const crearAvanceStyles = StyleSheet.create({
   statusButton: {
     flex: 1,
     minWidth: '30%',
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
   },
   statusButtonSelected: {
-    backgroundColor: '#dbeafe',
-    borderColor: '#2563EB',
+    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+    borderColor: '#00D4FF',
   },
   statusIcon: {
     width: 20,
@@ -231,30 +235,30 @@ export const crearAvanceStyles = StyleSheet.create({
   statusLabel: {
     fontFamily: 'Montserrat_600SemiBold',
     fontSize: 13,
-    color: '#475569',
+    color: '#94A3B8',
     textAlign: 'center',
   },
   statusButtonSelectedText: {
-    color: '#2563EB',
+    color: '#FFFFFF',
   },
   
-  // Información del reporte
+  // Información del reporte - ESTILO FUTURISTA
   reportInfoSection: {
     paddingHorizontal: 20,
-    marginBottom: 25,
+    marginBottom: 20,
   },
   reportInfoTitle: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#1e293b',
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#E2E8F0',
+    marginBottom: 12,
   },
   reportInfoCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   reportInfoHeader: {
     flexDirection: 'row',
@@ -264,40 +268,37 @@ export const crearAvanceStyles = StyleSheet.create({
   locationIcon: {
     width: 20,
     height: 20,
-    tintColor: '#2563EB',
+    tintColor: '#00D4FF',
     marginRight: 10,
   },
   reportInfoText: {
     fontFamily: 'Montserrat_600SemiBold',
     fontSize: 16,
-    color: '#1e293b',
+    color: '#FFFFFF',
     flex: 1,
   },
   reportDescription: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 14,
-    color: '#475569',
+    color: '#CBD5E1',
     lineHeight: 20,
     marginTop: 10,
   },
   
-  // Botón de enviar
+  // Botón de enviar - ESTILO FUTURISTA CON GRADIENTE
   sendButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 12,
-    paddingVertical: 18,
+    borderRadius: 14,
+    overflow: 'hidden',
     marginHorizontal: 20,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 3 },
+    marginTop: 10,
+    shadowColor: '#00D4FF',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowRadius: 10,
+    elevation: 8,
   },
   sendButtonDisabled: {
-    backgroundColor: '#93c5fd',
+    opacity: 0.6,
   },
   sendIcon: {
     width: 20,
@@ -307,59 +308,59 @@ export const crearAvanceStyles = StyleSheet.create({
   },
   sendButtonText: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
+    fontSize: 16,
     color: '#FFFFFF',
   },
   
-  // Estado de carga
+  // Estado de carga - ESTILO FUTURISTA
   loadingContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(10, 15, 36, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   
-  // Mensajes de error/éxito
+  // Mensajes de error/éxito - ESTILO FUTURISTA
   messageContainer: {
     marginHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 15,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
+    borderWidth: 1,
   },
   successContainer: {
-    backgroundColor: '#dcfce7',
-    borderWidth: 1,
-    borderColor: '#86efac',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderColor: 'rgba(34, 197, 94, 0.3)',
   },
   errorContainer: {
-    backgroundColor: '#fee',
-    borderWidth: 1,
-    borderColor: '#fca5a5',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: 'rgba(239, 68, 68, 0.3)',
   },
   messageText: {
     fontFamily: 'Montserrat_500Medium',
     fontSize: 14,
     textAlign: 'center',
+    lineHeight: 20,
   },
   successText: {
-    color: '#166534',
+    color: '#22C55E',
   },
   errorText: {
-    color: '#b91c1c',
+    color: '#EF4444',
   },
   
-  // Divisores
+  // Divisores - ESTILO FUTURISTA
   divider: {
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     marginHorizontal: 20,
-    marginVertical: 20,
+    marginVertical: 15,
   },
 });
 

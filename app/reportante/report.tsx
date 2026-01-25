@@ -1,6 +1,7 @@
-// app/reportante/report.tsx
+// app/reportante/report.tsx - CON DISEÑO MEJORADO
 import { useAuth } from '@/hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -16,6 +17,9 @@ import {
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { reportStyles } from '../../styles/reportante/reportStyles';
+
+// Importar estilos del registro
+import { registerStyles } from '../../styles/registerStyles';
 
 // Prioridades según el endpoint
 enum ReportPriority {
@@ -282,344 +286,387 @@ export default function ReportScreen() {
   };
 
   return (
-    <ScrollView 
-      contentContainerStyle={reportStyles.scrollContent}
-      showsVerticalScrollIndicator={false}
-      style={reportStyles.container}
-    >
-      <View style={reportStyles.header}>
-        <Text style={reportStyles.headerTitle}>Nuevo Reporte</Text>
-        <Text style={reportStyles.headerSubtitle}>
+    <View style={[registerStyles.container, { paddingBottom: 0 }]}>
+      {/* Fondo con gradiente */}
+      <LinearGradient
+        colors={['#0A0F24', '#0D1B2A', '#1B263B']}
+        style={registerStyles.backgroundGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      
+      {/* Partículas decorativas */}
+      <View style={registerStyles.particlesContainer}>
+        <View style={registerStyles.particle1} />
+        <View style={registerStyles.particle2} />
+        <View style={registerStyles.particle3} />
+      </View>
+
+      {/* Header moderno */}
+      <View style={registerStyles.header}>
+        <Text style={registerStyles.title}>
+          Nuevo <Text style={registerStyles.titleGradient}>Reporte</Text>
+        </Text>
+        <Text style={registerStyles.subtitle}>
           Describe la situación observada de forma clara y precisa
         </Text>
       </View>
 
-      {successMessage ? (
-        <View style={[reportStyles.messageContainer, reportStyles.successContainer]}>
-          <Text style={[reportStyles.messageText, reportStyles.successText]}>
-            {successMessage}
-          </Text>
-        </View>
-      ) : null}
-      
-      {errorMessage ? (
-        <View style={[reportStyles.messageContainer, reportStyles.errorContainer]}>
-          <Text style={[reportStyles.messageText, reportStyles.errorText]}>
-            {errorMessage}
-          </Text>
-        </View>
-      ) : null}
-
-      <View style={reportStyles.photosSection}>
-        <Text style={reportStyles.photosTitle}>Agregar foto</Text>
-        <View style={reportStyles.photosContainer}>
-          <TouchableOpacity 
-            style={reportStyles.addPhotoButton}
-            onPress={pickImage}
-            disabled={images.length >= 5}
-          >
-            <Image
-              source={require('@/assets/images/camera.png')}
-              style={reportStyles.addPhotoIcon}
-              resizeMode="contain"
-            />
-            <Text style={reportStyles.addPhotoText}>
-              {images.length}/5 fotos
+      <ScrollView 
+        contentContainerStyle={{ paddingBottom: 0 }}
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+      >
+        {/* Mensajes de éxito/error */}
+        {successMessage ? (
+          <View style={[reportStyles.messageContainer, reportStyles.successContainer]}>
+            <Text style={[reportStyles.messageText, reportStyles.successText]}>
+              {successMessage}
             </Text>
-          </TouchableOpacity>
-          
-          {images.map((uri, index) => (
-            <View key={index} style={reportStyles.photoItem}>
-              <Image 
-                source={{ uri }} 
-                style={reportStyles.photoImage} 
-                resizeMode="cover"
+          </View>
+        ) : null}
+        
+        {errorMessage ? (
+          <View style={[reportStyles.messageContainer, reportStyles.errorContainer]}>
+            <Text style={[reportStyles.messageText, reportStyles.errorText]}>
+              {errorMessage}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Sección de fotos */}
+        <View style={reportStyles.photosSection}>
+          <Text style={[registerStyles.inputLabel, { marginBottom: 12 }]}>AGREGAR FOTOS</Text>
+          <View style={reportStyles.photosContainer}>
+            <TouchableOpacity 
+              style={reportStyles.addPhotoButton}
+              onPress={pickImage}
+              disabled={images.length >= 5}
+            >
+              <Image
+                source={require('@/assets/images/camera.png')}
+                style={reportStyles.addPhotoIcon}
+                resizeMode="contain"
               />
-              <TouchableOpacity 
-                style={reportStyles.removePhotoButton}
-                onPress={() => removeImage(index)}
-              >
-                <Text style={reportStyles.removePhotoText}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+              <Text style={reportStyles.addPhotoText}>
+                {images.length}/5 fotos
+              </Text>
+            </TouchableOpacity>
+            
+            {images.map((uri, index) => (
+              <View key={index} style={reportStyles.photoItem}>
+                <Image 
+                  source={{ uri }} 
+                  style={reportStyles.photoImage} 
+                  resizeMode="cover"
+                />
+                <TouchableOpacity 
+                  style={reportStyles.removePhotoButton}
+                  onPress={() => removeImage(index)}
+                >
+                  <Text style={reportStyles.removePhotoText}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={reportStyles.divider} />
-
-      <View style={reportStyles.locationSection}>
-        <Text style={reportStyles.locationTitle}>Ubicación detectada</Text>
-        <View style={reportStyles.locationCard}>
-          <View style={reportStyles.locationHeader}>
+        {/* Sección de ubicación */}
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>UBICACIÓN DETECTADA</Text>
+          <View style={registerStyles.inputContainer}>
             <Image
               source={require('@/assets/images/location.png')}
-              style={reportStyles.locationIcon}
+              style={registerStyles.leftIcon}
               resizeMode="contain"
             />
-            <Text style={reportStyles.locationText}>
+            <Text style={[registerStyles.input, { flex: 1 }]}>
               {address || 'Obteniendo ubicación...'}
             </Text>
             <TouchableOpacity 
-              style={reportStyles.changeLocationButton}
               onPress={changeLocation}
               disabled={isGettingLocation}
+              style={{ padding: 6 }}
             >
               {isGettingLocation ? (
-                <ActivityIndicator size="small" color="#2563EB" />
+                <ActivityIndicator size="small" color="#00D4FF" />
               ) : (
-                <>
-                  <Image
-                    source={require('@/assets/images/edit.png')}
-                    style={reportStyles.editIcon}
-                    resizeMode="contain"
-                  />
-                  <Text style={reportStyles.changeLocationText}>
-                    Cambiar
-                  </Text>
-                </>
+                <Image
+                  source={require('@/assets/images/edit.png')}
+                  style={[registerStyles.leftIcon, { marginRight: 0 }]}
+                  resizeMode="contain"
+                />
               )}
             </TouchableOpacity>
           </View>
           
-          <View style={reportStyles.coordinatesContainer}>
-            <View style={reportStyles.coordinateRow}>
-              <Text style={reportStyles.coordinateLabel}>Latitud:</Text>
-              <Text style={reportStyles.coordinateValue}>
-                {latitude ? latitude.toFixed(6) : 'Obteniendo...'}
-              </Text>
-            </View>
-            <View style={reportStyles.coordinateRow}>
-              <Text style={reportStyles.coordinateLabel}>Longitud:</Text>
-              <Text style={reportStyles.coordinateValue}>
-                {longitude ? longitude.toFixed(6) : 'Obteniendo...'}
-              </Text>
+          {/* Coordenadas y ciudad */}
+          <View style={{ marginTop: 12, gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={[registerStyles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>LATITUD</Text>
+                <Text style={{ color: '#CBD5E1', fontSize: 13 }}>
+                  {latitude ? latitude.toFixed(6) : 'Obteniendo...'}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[registerStyles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>LONGITUD</Text>
+                <Text style={{ color: '#CBD5E1', fontSize: 13 }}>
+                  {longitude ? longitude.toFixed(6) : 'Obteniendo...'}
+                </Text>
+              </View>
             </View>
             
-            <View style={reportStyles.coordinateRow}>
-              <Text style={reportStyles.coordinateLabel}>Dirección:</Text>
-              <TextInput
-                style={[reportStyles.coordinateValue, {padding: 0}]}
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Referencia del lugar (opcional)"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
-            <View style={reportStyles.coordinateRow}>
-              <Text style={reportStyles.coordinateLabel}>Ciudad:</Text>
-              <TextInput
-                style={[reportStyles.coordinateValue, {padding: 0}]}
-                value={city}
-                onChangeText={setCity}
-                placeholder="Ej: Quito"
-                placeholderTextColor="#94a3b8"
-              />
+            <View style={{ gap: 8 }}>
+              <View>
+                <Text style={[registerStyles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>DIRECCIÓN (OPCIONAL)</Text>
+                <TextInput
+                  style={[
+                    registerStyles.input,
+                    { 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                      borderRadius: 8, 
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      fontSize: 14 
+                    }
+                  ]}
+                  value={address}
+                  onChangeText={setAddress}
+                  placeholder="Referencia del lugar"
+                  placeholderTextColor="#64748B"
+                />
+              </View>
+              
+              <View>
+                <Text style={[registerStyles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>CIUDAD</Text>
+                <TextInput
+                  style={[
+                    registerStyles.input,
+                    { 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                      borderRadius: 8, 
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      fontSize: 14 
+                    }
+                  ]}
+                  value={city}
+                  onChangeText={setCity}
+                  placeholder="Ej: Quito"
+                  placeholderTextColor="#64748B"
+                />
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      {showMap && (
-        <View style={reportStyles.mapModal}>
-          <View style={reportStyles.mapHeader}>
-            <Text style={reportStyles.mapTitle}>Selecciona una ubicación</Text>
-            <TouchableOpacity onPress={() => setShowMap(false)}>
-              <Text style={reportStyles.mapClose}>Cerrar</Text>
-            </TouchableOpacity>
+        {/* Mapa modal */}
+        {showMap && (
+          <View style={reportStyles.mapModal}>
+            <View style={reportStyles.mapHeader}>
+              <Text style={reportStyles.mapTitle}>Selecciona una ubicación</Text>
+              <TouchableOpacity onPress={() => setShowMap(false)}>
+                <Text style={reportStyles.mapClose}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <MapView
+              style={reportStyles.map}
+              region={mapRegion}
+              onPress={handleMapPress}
+              showsUserLocation
+              showsMyLocationButton
+            >
+              {latitude && longitude && (
+                <Marker
+                  coordinate={{ latitude, longitude }}
+                  title="Ubicación seleccionada"
+                />
+              )}
+            </MapView>
+            
+            <View style={reportStyles.mapInstructions}>
+              <Text style={reportStyles.mapInstructionsText}>
+                Toca en el mapa para seleccionar una ubicación
+              </Text>
+            </View>
           </View>
-          
-          <MapView
-            style={reportStyles.map}
-            region={mapRegion}
-            onPress={handleMapPress}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {latitude && longitude && (
-              <Marker
-                coordinate={{ latitude, longitude }}
-                title="Ubicación seleccionada"
-              />
-            )}
-          </MapView>
-          
-          <View style={reportStyles.mapInstructions}>
-            <Text style={reportStyles.mapInstructionsText}>
-              Toca en el mapa para seleccionar una ubicación
-            </Text>
+        )}
+
+        {/* Sección de descripción */}
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>DESCRIPCIÓN</Text>
+          <View style={[
+            registerStyles.inputContainer,
+            { height: 'auto', minHeight: 120, alignItems: 'flex-start' }
+          ]}>
+            <TextInput
+              style={[
+                registerStyles.input,
+                { 
+                  flex: 1, 
+                  textAlignVertical: 'top',
+                  paddingTop: 14,
+                  minHeight: 100 
+                }
+              ]}
+              placeholder="Describe brevemente lo que observaste (mínimo 10 caracteres)"
+              placeholderTextColor="#64748B"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              maxLength={500}
+            />
           </View>
+          <Text style={{
+            fontSize: 12,
+            color: description.length >= 10 ? '#00D4FF' : '#FF416C',
+            marginTop: 6,
+            fontFamily: 'Roboto_400Regular'
+          }}>
+            {description.length}/500 • {description.length < 10 ? 
+              `Faltan ${10 - description.length} caracteres` : '✓ Descripción válida'}
+          </Text>
         </View>
-      )}
 
-      <View style={reportStyles.descriptionSection}>
-        <Text style={reportStyles.descriptionTitle}>Ingrese descripción</Text>
-        <TextInput
-          style={reportStyles.descriptionInput}
-          placeholder="Describe brevemente lo que observaste (mínimo 10 caracteres)"
-          placeholderTextColor="#94a3b8"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          maxLength={500}
-        />
-        <Text style={[
-          reportStyles.characterCount,
-          description.length < 10 ? reportStyles.characterCountError : 
-          description.length >= 10 ? reportStyles.characterCountValid : {}
-        ]}>
-          {description.length}/500 caracteres • {description.length < 10 ? 
-            `Faltan ${10 - description.length} caracteres` : '✓ Válido'}
-        </Text>
-      </View>
-
-      <View style={reportStyles.anonymousSection}>
-        <View style={reportStyles.anonymousRow}>
+        {/* Sección anónima */}
+        <View style={registerStyles.inputGroup}>
           <TouchableOpacity 
-            style={reportStyles.checkboxContainer}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
             onPress={() => setIsAnonymous(!isAnonymous)}
           >
-            <View style={[
-              reportStyles.checkbox,
-              isAnonymous && reportStyles.checkboxChecked
-            ]}>
+            <View style={{
+              width: 22,
+              height: 22,
+              borderRadius: 6,
+              borderWidth: 2,
+              borderColor: isAnonymous ? '#00D4FF' : '#64748B',
+              backgroundColor: isAnonymous ? 'rgba(0, 212, 255, 0.1)' : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               {isAnonymous && (
                 <Image
                   source={require('@/assets/images/anonimo.png')}
-                  style={reportStyles.checkIcon}
+                  style={{ width: 14, height: 14, tintColor: '#00D4FF' }}
                   resizeMode="contain"
                 />
               )}
             </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{
+                fontFamily: 'Roboto_600SemiBold',
+                fontSize: 14,
+                color: '#E2E8F0',
+                marginBottom: 2
+              }}>
+                Reporte anónimo
+              </Text>
+              <Text style={{
+                fontFamily: 'Montserrat_400Regular',
+                fontSize: 12,
+                color: '#94A3B8',
+                lineHeight: 16
+              }}>
+                Tu identidad no será visible en el reporte público
+              </Text>
+            </View>
           </TouchableOpacity>
-          
-          <View style={reportStyles.anonymousContent}>
-            <Text style={reportStyles.anonymousTitle}>
-              Realizar reporte de forma anónima
-            </Text>
-            <Text style={reportStyles.anonymousText}>
-              Tu identidad no será visible en el reporte público
-            </Text>
+        </View>
+
+        {/* Sección de prioridad */}
+        <View style={registerStyles.inputGroup}>
+          <Text style={registerStyles.inputLabel}>PRIORIDAD DEL REPORTE</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+            {[ReportPriority.BAJA, ReportPriority.MEDIA, ReportPriority.ALTA].map((p) => (
+              <TouchableOpacity
+                key={p}
+                style={{
+                  flex: 1,
+                  backgroundColor: priority === p 
+                    ? p === ReportPriority.ALTA ? 'rgba(239, 68, 68, 0.1)' 
+                    : p === ReportPriority.MEDIA ? 'rgba(249, 115, 22, 0.1)' 
+                    : 'rgba(34, 197, 94, 0.1)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  borderWidth: 2,
+                  borderColor: priority === p 
+                    ? p === ReportPriority.ALTA ? '#EF4444' 
+                    : p === ReportPriority.MEDIA ? '#F97316' 
+                    : '#22C55E'
+                    : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 12,
+                  padding: 12,
+                  alignItems: 'center'
+                }}
+                onPress={() => setPriority(p)}
+              >
+                <Image
+                  source={require('@/assets/images/priority.png')}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    tintColor: p === ReportPriority.ALTA ? '#EF4444' 
+                      : p === ReportPriority.MEDIA ? '#F97316' 
+                      : '#22C55E',
+                    marginBottom: 6
+                  }}
+                  resizeMode="contain"
+                />
+                <Text style={{
+                  fontFamily: 'Roboto_700Bold',
+                  fontSize: 13,
+                  color: priority === p ? '#FFFFFF' : '#94A3B8',
+                  marginBottom: 2
+                }}>
+                  {p.charAt(0) + p.slice(1).toLowerCase()}
+                </Text>
+                <Text style={{
+                  fontFamily: 'Montserrat_400Regular',
+                  fontSize: 10,
+                  color: priority === p ? '#CBD5E1' : '#64748B',
+                  textAlign: 'center'
+                }}>
+                  {p === ReportPriority.ALTA ? '¡Urgente!' 
+                    : p === ReportPriority.MEDIA ? 'Prioridad normal' 
+                    : 'Situación no urgente'}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
-      </View>
 
-      <View style={reportStyles.prioritySection}>
-        <Text style={reportStyles.priorityTitle}>Prioridad del reporte</Text>
-        <View style={reportStyles.priorityOptions}>
-          <TouchableOpacity 
-            style={[
-              reportStyles.priorityButton,
-              priority === ReportPriority.BAJA && reportStyles.priorityButtonSelected
-            ]}
-            onPress={() => setPriority(ReportPriority.BAJA)}
+        {/* Botón de envío */}
+        <TouchableOpacity
+          style={[
+            registerStyles.registerButton,
+            (description.length < 10 || isLoading) && registerStyles.registerButtonDisabled,
+            { marginTop: 20, marginBottom: 20 }
+          ]}
+          onPress={submitReport}
+          disabled={description.length < 10 || isLoading}
+        >
+          <LinearGradient
+            colors={isLoading || description.length < 10 ? ['#475569', '#475569'] : ['#00D4FF', '#0066FF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={registerStyles.buttonGradient}
           >
-            <Image
-              source={require('@/assets/images/priority.png')}
-              style={[
-                reportStyles.priorityIcon,
-                {tintColor: priority === ReportPriority.BAJA ? '#22c55e' : '#94a3b8'}
-              ]}
-              resizeMode="contain"
-            />
-            <Text style={[
-              reportStyles.priorityLabel,
-              priority === ReportPriority.BAJA && reportStyles.priorityButtonSelectedText
-            ]}>
-              Baja
-            </Text>
-            <Text style={reportStyles.priorityDescription}>
-              Situación no urgente
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[
-              reportStyles.priorityButton,
-              priority === ReportPriority.MEDIA && reportStyles.priorityButtonSelected
-            ]}
-            onPress={() => setPriority(ReportPriority.MEDIA)}
-          >
-            <Image
-              source={require('@/assets/images/priority.png')}
-              style={[
-                reportStyles.priorityIcon,
-                {tintColor: priority === ReportPriority.MEDIA ? '#f97316' : '#94a3b8'}
-              ]}
-              resizeMode="contain"
-            />
-            <Text style={[
-              reportStyles.priorityLabel,
-              priority === ReportPriority.MEDIA && reportStyles.priorityButtonSelectedText
-            ]}>
-              Media
-            </Text>
-            <Text style={reportStyles.priorityDescription}>
-              Prioridad normal
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[
-              reportStyles.priorityButton,
-              priority === ReportPriority.ALTA && reportStyles.priorityButtonSelected
-            ]}
-            onPress={() => setPriority(ReportPriority.ALTA)}
-          >
-            <Image
-              source={require('@/assets/images/priority.png')}
-              style={[
-                reportStyles.priorityIcon,
-                {tintColor: priority === ReportPriority.ALTA ? '#ef4444' : '#94a3b8'}
-              ]}
-              resizeMode="contain"
-            />
-            <Text style={[
-              reportStyles.priorityLabel,
-              priority === ReportPriority.ALTA && reportStyles.priorityButtonSelectedText
-            ]}>
-              Alta
-            </Text>
-            <Text style={reportStyles.priorityDescription}>
-              ¡Urgente!
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <TouchableOpacity
-        style={[
-          reportStyles.sendButton,
-          (description.length < 10 || isLoading) && reportStyles.sendButtonDisabled
-        ]}
-        onPress={submitReport}
-        disabled={description.length < 10 || isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <>
-            <Image
-              source={require('@/assets/images/send.png')}
-              style={reportStyles.sendIcon}
-              resizeMode="contain"
-            />
-            <Text style={reportStyles.sendButtonText}>
-              Enviar reporte
-            </Text>
-          </>
-        )}
-      </TouchableOpacity>
-
-      {isLoading && (
-        <View style={reportStyles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={{marginTop: 10, color: '#64748b'}}>
-            Enviando reporte...
-          </Text>
-        </View>
-      )}
-    </ScrollView>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <View style={registerStyles.buttonContent}>
+                <Text style={registerStyles.buttonText}>ENVIAR REPORTE</Text>
+                <Image
+                  source={require('@/assets/images/send.png')}
+                  style={registerStyles.buttonIcon}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
-
