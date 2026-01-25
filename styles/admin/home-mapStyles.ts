@@ -7,23 +7,28 @@ container: {
   },
   
 // 2. Header: Más translúcido y con mejor espaciado
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Más transparente
-    paddingTop: Platform.OS === 'ios' ? 50 : 40, // Espacio para la barra de estado
-    paddingBottom: 15,
-    paddingHorizontal: 16,
-    zIndex: 100,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: -0.5,
-    flexShrink: 1, // Permite que el título se ajuste si hay poco espacio
-  },
+header: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  // NUEVO: Azul medio opaco (Glassmorphism azul)
+  backgroundColor: 'rgba(37, 99, 235, 0.85)', 
+  paddingTop: Platform.OS === 'ios' ? 50 : 40,
+  paddingBottom: 15,
+  paddingHorizontal: 16,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  elevation: 10,
+  zIndex: 100,
+},
+headerTitle: {
+  fontSize: 22,
+  fontWeight: '800',
+  color: '#FFFFFF', // Texto blanco para resaltar sobre el azul
+  letterSpacing: -0.5,
+},
   headerRightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -31,19 +36,19 @@ container: {
   },
 
 // 3. Botón de Notificación: Más pequeño y color Slate elegante
-  notificationButton: {
-    width: 38, // Reducimos tamaño
-    height: 38,
-    backgroundColor: 'rgba(226, 232, 240, 0.8)', // Gris muy tenue
-    borderRadius: 19, // Circular
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notificationIcon: {
-    width: 20, // Icono más pequeño
-    height: 20,
-    tintColor: '#475569', // Color Slate (azul grisáceo) más agradable que el negro
-  },
+notificationButton: {
+  width: 38,
+  height: 38,
+  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Fondo blanco muy suave
+  borderRadius: 19,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+notificationIcon: {
+  width: 20,
+  height: 20,
+  tintColor: '#FFFFFF', // Icono blanco
+},
   notificationBadge: {
     position: 'absolute',
     top: 2,
@@ -57,27 +62,25 @@ container: {
   },
 
 // 4. Botón Salir: Aseguramos que se mantenga en pantalla
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
-  },
+logoutButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#FFFFFF', // Botón blanco para que destaque
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 10,
+},
+
   logoutIcon: {
     width: 18,
     height: 18,
     tintColor: '#EF4444',
   },
-  logoutText: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 13,
-    color: '#EF4444',
-  },
-
+logoutText: {
+  fontFamily: 'Roboto_700Bold',
+  fontSize: 13,
+  color: '#EF4444', // Texto rojo para la acción de salir
+},
   // Contenido y Mapa
   contentContainer: {
     flex: 1,
