@@ -11,26 +11,18 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      screenOptions={{
-        // 1. Colores de los Iconos (Blanco sobre Azul)
-        tabBarActiveTintColor: '#FFFFFF', 
-        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.5)',
-        
-        headerShown: false,
-        tabBarButton: HapticTab,
-
-        // 2. Estilo de la Barra (Azul Medio Opaco)
-        tabBarStyle: {
-          position: 'absolute', // Flota sobre el mapa
-          backgroundColor: 'rgba(37, 99, 235, 0.9)', // Azul medio opaco solicitado
-          borderTopWidth: 0,
-          height: Platform.OS === 'ios' ? 88 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-          elevation: 20, // Sombra para Android
-          shadowColor: '#000', // Sombra para iOS
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 10,
+        screenOptions={{
+            tabBarActiveTintColor: '#FFFFFF', // Icono activo blanco
+            tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.5)',
+            headerShown: false,
+            tabBarStyle: {
+              position: 'absolute',
+              backgroundColor: 'rgba(37, 99, 235, 0.9)', // Mismo azul del header
+              borderTopWidth: 0,
+              // Altura ajustada: Más delgada y compacta
+              height: Platform.OS === 'ios' ? 75 : 55, 
+              paddingBottom: Platform.OS === 'ios' ? 25 : 8,
+              elevation: 0,
         },
       }}>
 
