@@ -1,5 +1,5 @@
 // app/styles/registerStyles.ts
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const registerStyles = StyleSheet.create({
   // Contenedor principal
@@ -173,10 +173,17 @@ export const registerStyles = StyleSheet.create({
   buttonGradient: {
     paddingVertical: 15,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  registerButtonDisabled: {
-    opacity: 0.6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563EB',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   buttonContent: {
     flexDirection: 'row',
@@ -207,18 +214,19 @@ export const registerStyles = StyleSheet.create({
     color: '#94A3B8',
     textAlign: 'center',
   },
-  linkHighlight: {
-    color: '#00D4FF',
+  registerHighlight: {
+    color: '#2563EB',
     fontFamily: 'Montserrat_600SemiBold',
   },
   
   // Mensaje de seguridad
   securityContainer: {
-    marginTop: 22,
+    marginTop: 32,
+    marginBottom: 20,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    gap: 6,
   },
   securityText: {
     fontFamily: 'Roboto_400Regular',
@@ -226,6 +234,79 @@ export const registerStyles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
     lineHeight: 16,
+  },
+
+  inputWithIconContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  leftIcon: {
+    width: 20,
+    height: 20,
+    position: 'absolute',
+    left: 14,
+    top: 14,
+    zIndex: 2,
+  },
+  leftIconNew: {
+    position: 'absolute',
+    left: 14,
+    top: 14,
+    zIndex: 2,
+  },
+  eyeIconContainer: {
+    position: 'absolute',
+    right: 14,
+    top: 12,
+    padding: 4,
+    zIndex: 2,
+  },
+  eyeIcon: {
+    width: 22,
+    height: 22,
+  },
+  loginButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  loginIcon: {
+    width: 20,
+    height: 20,
+    marginLeft: 8,
+  },
+
+  // Estilos del Toast Mejorado
+  toastContainer: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    zIndex: 9999,
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  toastText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    lineHeight: 20,
   },
 });
 
