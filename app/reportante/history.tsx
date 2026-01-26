@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { collection, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -7,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -14,7 +16,6 @@ import {
 } from 'react-native';
 import { historyStyles } from '../../styles/reportante/historyStyles';
 
-// Tipo para los reportes (basado en Firebase)
 type Report = {
   id: string;
   description: string;
@@ -31,6 +32,12 @@ type Report = {
   is_anonymous_public?: boolean;
 };
 
+type DateFilterOption = {
+  label: string;
+  value: string | null;
+  getDateRange?: () => { start: Date; end: Date } | null;
+};
+
 export default function HistoryScreen() {
   const { authState } = useAuth();
   const { user } = authState;
@@ -39,14 +46,22 @@ export default function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDateOption, setSelectedDateOption] = useState<string>('todos');
+
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  
+  // Estados para modales
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'alta': return '#EF4444'; // rojo
-      case 'media': return '#fa8f15ff'; // naranja
-      case 'baja': return '#22C55E'; // verde
-      default: return '#9CA3AF'; // gris neutro
+      case 'alta': return '#EF4444';
+      case 'media': return '#fa8f15ff';
+      case 'baja': return '#22C55E';
+      default: return '#9CA3AF';
     }
   };
 
@@ -56,7 +71,6 @@ export default function HistoryScreen() {
       return date.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: 'short',
-        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       });
@@ -65,24 +79,69 @@ export default function HistoryScreen() {
     }
   };
 
+  // Opciones de filtro de fecha
+  const dateOptions: DateFilterOption[] = [
+    { label: 'Todos', value: 'todos' },
+    { label: 'Hoy', value: 'hoy' },
+    { label: 'Ayer', value: 'ayer' },
+    { label: 'Última semana', value: 'semana' },
+    { label: 'Este mes', value: 'mes' },
+  ];
+
+  const getDateRange = (option: string) => {
+    const now = new Date();
+    const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    switch (option) {
+      case 'hoy': {
+        const start = startOfDay(now);
+        const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+        return { start, end };
+      }
+      case 'ayer': {
+        const start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const startOfYesterday = startOfDay(start);
+        const end = new Date(startOfYesterday.getTime() + 24 * 60 * 60 * 1000);
+        return { start: startOfYesterday, end };
+      }
+      case 'semana': {
+        const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return { start, end: now };
+      }
+      case 'mes': {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        return { start, end: now };
+      }
+      default:
+        return null;
+    }
+  };
+
   const applyFilters = useCallback(() => {
     let filtered = [...reports];
+    
+    // Filtro por estado
     if (selectedStatus !== 'todos') {
       filtered = filtered.filter(report => report.status === selectedStatus);
     }
-    if (selectedDate) {
-      filtered = filtered.filter(report => {
-        try {
-          const reportDate = new Date(report.created_at).toDateString();
-          const selected = new Date(selectedDate).toDateString();
-          return reportDate === selected;
-        } catch {
-          return true;
-        }
-      });
+    
+    // Filtro por fecha
+    if (selectedDateOption !== 'todos') {
+      const dateRange = getDateRange(selectedDateOption);
+      if (dateRange) {
+        filtered = filtered.filter(report => {
+          try {
+            const reportDate = new Date(report.created_at);
+            return reportDate >= dateRange.start && reportDate <= dateRange.end;
+          } catch {
+            return false;
+          }
+        });
+      }
     }
+    
     setFilteredReports(filtered);
-  }, [reports, selectedStatus, selectedDate]);
+  }, [reports, selectedStatus, selectedDateOption]);
 
   const handleDeleteReport = async (reportId: string, isAssigned: boolean) => {
     if (isAssigned) {
@@ -119,6 +178,13 @@ export default function HistoryScreen() {
 
   const handleViewAdvances = (reportId: string) => {
     router.push(`/reportante/avances?reportId=${reportId}`);
+  };
+
+  // Función para abrir visor de imágenes
+  const openImageGallery = (images: string[], startIndex: number) => {
+    setSelectedImages(images);
+    setSelectedImageIndex(startIndex);
+    setShowImageModal(true);
   };
 
   useEffect(() => {
@@ -164,6 +230,13 @@ export default function HistoryScreen() {
     applyFilters();
   }, [applyFilters]);
 
+  // Calcular conteos por urgencia
+  const priorityCounts = {
+    alta: reports.filter(r => r.priority === 'alta').length,
+    media: reports.filter(r => r.priority === 'media').length,
+    baja: reports.filter(r => r.priority === 'baja').length,
+  };
+
   if (loading) {
     return (
       <View style={historyStyles.loadingContainer}>
@@ -185,45 +258,186 @@ export default function HistoryScreen() {
 
   return (
     <View style={historyStyles.container}>
+      {/* Header con gradiente - COMPACTO (COMO EJEMPLO) */}
+      <LinearGradient
+        colors={['#667eea', '#764ba2']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={historyStyles.headerContainer}
+      >
+        <Text style={historyStyles.headerTitle}>Historial de Reportes</Text>
+        <Text style={historyStyles.headerSubtitle}>
+          Revisa tus reportes anteriores y su estado actual
+        </Text>
+      </LinearGradient>
+
+      {/* 3 Cards de urgencia - FUERA DEL GRADIENTE, SOBREPUESTAS (COMO EJEMPLO) */}
+      <View style={historyStyles.statsContainer}>
+        {/* Card Urgencia Alta */}
+        <View style={[historyStyles.statCard, { borderColor: '#EF4444' }]}>
+          <Text style={[historyStyles.statValue, { color: '#EF4444' }]}>
+            {priorityCounts.alta}
+          </Text>
+          <Text style={[historyStyles.statLabel, { color: '#EF4444' }]}>Alta</Text>
+        </View>
+        
+        {/* Card Urgencia Media */}
+        <View style={[historyStyles.statCard, { borderColor: '#fa8f15ff' }]}>
+          <Text style={[historyStyles.statValue, { color: '#fa8f15ff' }]}>
+            {priorityCounts.media}
+          </Text>
+          <Text style={[historyStyles.statLabel, { color: '#fa8f15ff' }]}>Media</Text>
+        </View>
+        
+        {/* Card Urgencia Baja */}
+        <View style={[historyStyles.statCard, { borderColor: '#22C55E' }]}>
+          <Text style={[historyStyles.statValue, { color: '#22C55E' }]}>
+            {priorityCounts.baja}
+          </Text>
+          <Text style={[historyStyles.statLabel, { color: '#22C55E' }]}>Baja</Text>
+        </View>
+      </View>
+
+      {/* Modal para filtro de estado */}
+      <Modal
+        visible={showStatusModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowStatusModal(false)}
+      >
+        <TouchableOpacity 
+          style={historyStyles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowStatusModal(false)}
+        >
+          <View style={historyStyles.modalContent}>
+            <Text style={historyStyles.modalTitle}>Filtrar por estado</Text>
+            {['todos', 'pendiente', 'asignado', 'en_proceso', 'resuelto', 'cerrado'].map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  historyStyles.modalOption,
+                  selectedStatus === status && historyStyles.modalOptionSelected
+                ]}
+                onPress={() => {
+                  setSelectedStatus(status);
+                  setShowStatusModal(false);
+                }}
+              >
+                <Text style={[
+                  historyStyles.modalOptionText,
+                  selectedStatus === status && historyStyles.modalOptionTextSelected
+                ]}>
+                  {status === 'todos' ? 'Todos los estados' : status.replace('_', ' ')}
+                </Text>
+                {selectedStatus === status && (
+                  <Image
+                    source={require('@/assets/images/check.png')}
+                    style={historyStyles.modalCheckIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Modal para filtro de fecha */}
+      <Modal
+        visible={showDateModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDateModal(false)}
+      >
+        <TouchableOpacity 
+          style={historyStyles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowDateModal(false)}
+        >
+          <View style={historyStyles.modalContent}>
+            <Text style={historyStyles.modalTitle}>Filtrar por fecha</Text>
+            {dateOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  historyStyles.modalOption,
+                  selectedDateOption === option.value && historyStyles.modalOptionSelected
+                ]}
+                onPress={() => {
+                  setSelectedDateOption(option.value || 'todos');
+                  setShowDateModal(false);
+                }}
+              >
+                <Text style={[
+                  historyStyles.modalOptionText,
+                  selectedDateOption === option.value && historyStyles.modalOptionTextSelected
+                ]}>
+                  {option.label}
+                </Text>
+                {selectedDateOption === option.value && (
+                  <Image
+                    source={require('@/assets/images/check.png')}
+                    style={historyStyles.modalCheckIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <ScrollView 
         contentContainerStyle={historyStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={historyStyles.header}>
-          <Text style={historyStyles.title}>Historial de Reportes</Text>
-          <Text style={historyStyles.subtitle}>
-            Revisa tus reportes anteriores y su estado actual
-          </Text>
+        {/* Filtros desplegables */}
+        <View style={historyStyles.filtersContainer}>
+          {/* Filtro de Estado */}
+          <TouchableOpacity 
+            style={historyStyles.filterDropdown}
+            onPress={() => setShowStatusModal(true)}
+          >
+            <View style={historyStyles.filterDropdownLeft}>
+              <Image 
+                source={require('@/assets/images/filtrar.png')}
+                style={historyStyles.filterIcon}
+              />
+              <Text style={historyStyles.filterDropdownText}>
+                {selectedStatus === 'todos' ? 'Estado' : selectedStatus.replace('_', ' ')}
+              </Text>
+            </View>
+            <Image 
+              source={require('@/assets/images/nombre.png')}
+              style={historyStyles.filterArrowIcon}
+            />
+          </TouchableOpacity>
+
+          {/* Filtro de Fecha */}
+          <TouchableOpacity 
+            style={historyStyles.filterDropdown}
+            onPress={() => setShowDateModal(true)}
+          >
+            <View style={historyStyles.filterDropdownLeft}>
+              <Image 
+                source={require('@/assets/images/calendar.png')}
+                style={historyStyles.filterIcon}
+              />
+              <Text style={historyStyles.filterDropdownText}>
+                {dateOptions.find(opt => opt.value === selectedDateOption)?.label || 'Fecha'}
+              </Text>
+            </View>
+            <Image 
+              source={require('@/assets/images/nombre.png')}
+              style={historyStyles.filterArrowIcon}
+            />
+          </TouchableOpacity>
         </View>
 
-        {/* Filtros */}
-        <View style={historyStyles.filtersContainer}>
-          <TouchableOpacity 
-            style={historyStyles.filterButton}
-            onPress={() => Alert.alert('Filtrar por estado', 'Próximamente')}
-          >
-            <Image 
-              source={require('@/assets/images/filtrar.png')}
-              style={{ width: 20, height: 20, resizeMode: 'contain' }}
-            />
-            <Text style={historyStyles.filterButtonText}>
-              {selectedStatus === 'todos' ? 'Estado' : selectedStatus}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={historyStyles.filterButton}
-            onPress={() => Alert.alert('Filtrar por fecha', 'Próximamente')}
-          >
-            <Image 
-              source={require('@/assets/images/calendar.png')}
-              style={{ width: 20, height: 20, resizeMode: 'contain' }}
-            />
-            <Text style={historyStyles.filterButtonText}>
-              {selectedDate ? 'Fecha selec.' : 'Fecha'}
-            </Text>
-          </TouchableOpacity>
+        {/* Contador de resultados */}
+        <View style={historyStyles.resultsCounter}>
+          <Text style={historyStyles.resultsCounterText}>
+            {filteredReports.length} {filteredReports.length === 1 ? 'resultado' : 'resultados'}
+          </Text>
         </View>
 
         {/* Lista de Reportes */}
@@ -282,18 +496,27 @@ export default function HistoryScreen() {
                     {report.description}
                   </Text>
 
-                  {/* Imágenes */}
+                 {/* Imágenes */}
                   {report.images && report.images.length > 0 && (
                     <View style={historyStyles.imagesContainer}>
                       {report.images.slice(0, 3).map((img, index) => (
-                        <Image
+                        <TouchableOpacity
                           key={index}
-                          source={{ uri: img }}
-                          style={{ width: 60, height: 60, borderRadius: 8, backgroundColor: '#e2e8f0', resizeMode: 'cover' }}
-                        />
+                          onPress={() => openImageGallery(report.images, index)}
+                          activeOpacity={0.7}
+                        >
+                          <Image
+                            source={{ uri: img }}
+                            style={{ width: 80, height: 80, borderRadius: 8, backgroundColor: '#e2e8f0', resizeMode: 'cover' }}
+                          />
+                        </TouchableOpacity>
                       ))}
                       {report.images.length > 3 && (
-                        <View style={historyStyles.imagePlaceholder}>
+                        <TouchableOpacity
+                          style={historyStyles.imagePlaceholder}
+                          onPress={() => openImageGallery(report.images, 3)}
+                          activeOpacity={0.7}
+                        >
                           <Image
                             source={require('@/assets/images/image.png')}
                             style={historyStyles.imagePlaceholderIcon}
@@ -301,7 +524,7 @@ export default function HistoryScreen() {
                           <Text style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
                             +{report.images.length - 3}
                           </Text>
-                        </View>
+                        </TouchableOpacity>
                       )}
                     </View>
                   )}
@@ -363,6 +586,79 @@ export default function HistoryScreen() {
           )}
         </View>
       </ScrollView>
+      
+{/* Modal para visor de imágenes */}
+<Modal
+  visible={showImageModal}
+  transparent={true}
+  animationType="fade"
+  onRequestClose={() => setShowImageModal(false)}
+>
+  <View style={{
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }}>
+    <TouchableOpacity
+      style={{
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        zIndex: 10,
+        padding: 10,
+      }}
+      onPress={() => setShowImageModal(false)}
+    >
+      <Text style={{ color: '#FFFFFF', fontSize: 24 }}>✕</Text>
+    </TouchableOpacity>
+    
+    {selectedImages.length > 0 && (
+      <Image
+        source={{ uri: selectedImages[selectedImageIndex] }}
+        style={{
+          width: '95%',
+          height: '70%',
+          resizeMode: 'contain',
+        }}
+      />
+    )}
+    
+    {selectedImages.length > 1 && (
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+        gap: 20,
+      }}>
+        <TouchableOpacity
+          onPress={() => setSelectedImageIndex(prev => 
+            prev > 0 ? prev - 1 : selectedImages.length - 1
+          )}
+          disabled={selectedImages.length <= 1}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 24 }}>◀</Text>
+        </TouchableOpacity>
+        
+        <Text style={{ color: '#FFFFFF', fontSize: 16 }}>
+          {selectedImageIndex + 1} / {selectedImages.length}
+        </Text>
+        
+        <TouchableOpacity
+          onPress={() => setSelectedImageIndex(prev => 
+            prev < selectedImages.length - 1 ? prev + 1 : 0
+          )}
+          disabled={selectedImages.length <= 1}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 24 }}>▶</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </View>
+</Modal>
+      
     </View>
+    
   );
 }

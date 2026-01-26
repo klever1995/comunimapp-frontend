@@ -1,127 +1,244 @@
-// app/styles/encargado/welcomeStyles.ts
-import { StyleSheet } from 'react-native';
+// styles/encargado/welcomeStyles.ts
+import { Dimensions, Platform, StyleSheet } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export const welcomeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
+
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    justifyContent: 'center',
+    paddingBottom: 30,
   },
-  header: {
+
+  // Header con Estilo Moderno (Sin Gradiente)
+  headerGradient: {
+    paddingTop: 40,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: 30,
+    backgroundColor: '#1e40afd8',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#1E40AF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
-  logoContainer: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: '#2563EB',
+  logoWrapper: {
+    width: 160,
+    height: 160,
+    backgroundColor: 'transparent',
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    tintColor: '#FFFFFF',
-  },
-  roleBadge: {
-    backgroundColor: '#F97316',
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 25,
-    marginTop: 10,
-  },
-  roleText: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    letterSpacing: 1,
-  },
-  contentContainer: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 30,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  welcomeTitle: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 22,
-    color: '#2563EB',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  welcomeText: {
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 16,
-    color: '#475569',
-    lineHeight: 24,
     marginBottom: 16,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 160,
+    height: 160,
+  },
+  roleBadgeNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0EA5E9',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    gap: 8,
+  },
+  roleTextNew: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFF',
+    letterSpacing: 1.5,
+  },
+
+  // Contenido Principal
+  mainContent: {
+    paddingHorizontal: 20,
+    paddingTop: 30,
+  },
+
+  // Título de Bienvenida
+  welcomeHeader: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  welcomeTitleNew: {
+    fontSize: 28,
+    color: '#F5F7FA',
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 36,
+  },
+  titleUnderline: {
+    width: 60,
+    height: 4,
+    backgroundColor: '#0EA5E9',
+    borderRadius: 2,
+    marginTop: 12,
+  },
+
+  // Cards de Descripción
+  descriptionCard: {
+    backgroundColor: '#ffffffea',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#0EA5E9',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  descriptionText: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: '#3c4858',
     textAlign: 'justify',
   },
-  highlightText: {
-    fontFamily: 'Montserrat_600SemiBold',
-    fontSize: 16,
-    color: '#F97316',
+  highlightTextNew: {
+    fontWeight: '700',
+    color: '#1E40AF',
   },
-  missionContainer: {
-    backgroundColor: '#dbeafe',
-    borderRadius: 12,
-    padding: 18,
-    marginTop: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2563EB',
+
+  // Funciones Principales
+  functionsContainer: {
+    backgroundColor: '#ffffffea',
+    padding: 20,
+    borderRadius: 16,
+    marginTop: 8,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  missionTitle: {
-    fontFamily: 'Roboto_700Bold',
+  functionsTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 10,
+  },
+  functionsTitle: {
     fontSize: 18,
-    color: '#1e40af',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: '#1E293B',
   },
-  missionText: {
-    fontFamily: 'Montserrat_400Regular',
-    fontSize: 15,
-    color: '#374151',
+  functionsList: {
+    gap: 16,
+  },
+  functionItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  functionIconContainer: {
+    width: 36,
+    height: 36,
+    backgroundColor: '#e0f2fe',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  functionText: {
+    flex: 1,
+    fontSize: 14,
     lineHeight: 22,
+    color: '#475569',
+    paddingTop: 7,
   },
-  continueButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 12,
+
+  // Botón Continuar (Sin Gradiente)
+  continueButtonWrapper: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    backgroundColor: '#1e40afe0',
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#1E40AF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  continueButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  continueButtonTextNew: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFF',
+    letterSpacing: 0.5,
+  },
+
+  // Footer
+  footerNew: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
     paddingVertical: 16,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    gap: 8,
   },
-  continueButtonText: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 18,
-    color: '#FFFFFF',
-  },
-  footer: {
-    marginTop: 25,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontFamily: 'Roboto_400Regular',
+  footerTextNew: {
     fontSize: 13,
-    color: '#64748b',
-    fontStyle: 'italic',
-    textAlign: 'center',
+    color: '#d4d4d4',
+    fontWeight: '500',
+  },
+
+  // Imagen de Fondo Decorativa
+  backgroundImageContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    opacity: 0.25,
+  },
+  backgroundImage: {
+    width: '100%',
+    height: '100%',
   },
 });
