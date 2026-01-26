@@ -44,3 +44,11 @@ app-example
 
 # Variables de entorno específicas
 .env
+
+# Ignorar archivos comprimidos
+*.zip
+
+# Ignorar imágenes nuevas que no quiero subir todavía
+assets/images/
+app/notification.tsx
+google-services.json

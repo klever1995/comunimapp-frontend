@@ -88,63 +88,93 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const STORAGE_KEY = '@Comunimapp_auth';
 
-  // ==============================================
-  // 1. SOLICITAR PERMISOS DE NOTIFICACIONES
-  // ==============================================
-  const requestNotificationPermissions = async (): Promise<boolean> => {
-    if (!Device.isDevice) {
-      console.warn('Debes usar un dispositivo físico para notificaciones push');
-      return false;
-    }
+// ==============================================
+// 1. SOLICITAR PERMISOS DE NOTIFICACIONES
+// ==============================================
+const requestNotificationPermissions = async (): Promise<boolean> => {
+  console.log('[DEBUG PERMISOS] Función llamada, verificando dispositivo...'); // AÑADE
+  if (!Device.isDevice) {
+    console.log('[DEBUG PERMISOS] No es un dispositivo físico, retornando false.'); // AÑADE
+    return false;
+  }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  console.log('[DEBUG PERMISOS] Estado actual de permisos:', existingStatus); // AÑADE
+  let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+  if (existingStatus !== 'granted') {
+    console.log('[DEBUG PERMISOS] Solicitando permisos...'); // AÑADE
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+    console.log('[DEBUG PERMISOS] Nuevo estado después de solicitar:', finalStatus); // AÑADE
+  }
 
-    if (finalStatus !== 'granted') {
-      Alert.alert(
-        'Permisos necesarios',
-        'Debes habilitar las notificaciones para recibir alertas importantes.',
-        [{ text: 'OK' }]
-      );
-      return false;
-    }
+  if (finalStatus !== 'granted') {
+    console.log('[DEBUG PERMISOS] Permisos NO otorgados, mostrando alerta.'); // AÑADE
+    Alert.alert(
+      'Permisos necesarios',
+      'Debes habilitar las notificaciones para recibir alertas importantes.',
+      [{ text: 'OK' }]
+    );
+    return false;
+  }
 
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
+  console.log('[DEBUG PERMISOS] Permisos OTORGADOS. Configurando canal Android...'); // AÑADE
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
 
-    return true;
-  };
+  console.log('[DEBUG PERMISOS] Retornando TRUE.'); // AÑADE
+  return true;
+};
 
-  // ==============================================
-  // 2. OBTENER Y REGISTRAR TOKEN FCM
-  // ==============================================
-  const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
-  Alert.alert('Debug', 'registerFCMToken ejecutado');
+// ==============================================
+// 2. OBTENER Y REGISTRAR TOKEN FCM (CON DEBUG)
+// ==============================================
+const registerFCMToken = async (accessToken: string, userId: string): Promise<void> => {
+  console.log('[DEBUG registerFCMToken] INICIO. UserId:', userId);
   try {
     const hasPermission = await requestNotificationPermissions();
-    Alert.alert('Debug 2', `Permisos: ${hasPermission}`);
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      console.log('[DEBUG registerFCMToken] Permisos denegados. Saliendo.');
+      return;
+    }
 
-    const expoPushToken = await Notifications.getExpoPushTokenAsync({
-      projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-    });
-    Alert.alert('Debug 3', `Token: ${expoPushToken?.data || 'null'}`);
+    console.log('[DEBUG registerFCMToken] Permisos OK. Obteniendo token...');
+    let expoPushToken;
+    let fcmToken;
+    try {
+      // Intentamos obtener el token nativo de Google (FCM) directamente
+      // Este es el que funcionará con tu archivo JSON en Python
+      const deviceToken = await Notifications.getDevicePushTokenAsync();
+      fcmToken = deviceToken.data;
+      
+      console.log('[LOG VICTORIA] TOKEN NATIVO DE GOOGLE OBTENIDO:', fcmToken);
+    } catch (googleError) {
+      console.error('[ERROR] No se pudo obtener el token de Google:', googleError);
+      
+      // Si falla el de Google, intentamos el de Expo como plan B
+      try {
+        const expoToken = await Notifications.getExpoPushTokenAsync({
+          projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+        });
+        fcmToken = expoToken.data;
+      } catch (expoError) {
+        console.error('[ERROR CRÍTICO] Fallaron ambos métodos de token');
+        return;
+      }
+    }
 
     const deviceName = Device.deviceName || 'Desconocido';
     const deviceModel = Device.modelId || 'Desconocido';
     const osVersion = Device.osVersion || 'Desconocido';
-    Alert.alert('Debug 4', `Preparando fetch a ${API_URL}/auth/register-fcm-token`);
+
+    console.log('[DEBUG registerFCMToken] Enviando token al backend...');
 
     const response = await fetch(`${API_URL}/auth/register-fcm-token`, {
       method: 'POST',
@@ -155,7 +185,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       },
       body: JSON.stringify({
         user_id: userId,
-        fcm_token: expoPushToken.data,
+        fcm_token: fcmToken,
         device_type: Platform.OS,
         device_name: deviceName,
         device_model: deviceModel,
@@ -163,15 +193,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }),
     });
 
+    const responseText = await response.text();
+    console.log('[DEBUG registerFCMToken] Respuesta backend:', responseText);
+
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: No se pudo registrar el token FCM`);
+      let errorDetail = responseText;
+      try {
+        const errorJson = JSON.parse(responseText);
+        errorDetail = errorJson.detail || errorJson.message || responseText;
+      } catch (e) {}
+      console.error(`[ERROR registerFCMToken] Backend: ${response.status}`, errorDetail);
+      throw new Error(`Error ${response.status}: ${errorDetail}`);
     }
 
-    console.log('✅ Token FCM registrado exitosamente');
-    Alert.alert('Debug 5', 'Token registrado exitosamente en backend');
-  } catch (error: any) {
-    console.warn('⚠️ Error registrando token FCM:', error.message || error);
-    Alert.alert('Error catch', error.message || 'Error desconocido');
+    console.log('[DEBUG registerFCMToken] ÉXITO: Token guardado para', userId);
+
+  } catch (outerError: any) {
+    console.error('[ERROR GENERAL en registerFCMToken]:', outerError.message);
   }
 };
 
@@ -280,7 +318,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       // ==========================
       // REGISTRAR TOKEN FCM DESPUÉS DE LOGIN
       // ==========================
+      console.log('[DEBUG LOGIN] Punto 1: Antes de llamar a registerFCMToken');
       await registerFCMToken(data.access_token, data.user.id);
+      console.log('[DEBUG LOGIN] Punto 2: Después de llamar a registerFCMToken');
 
       await saveAuthData(data.user, data.access_token);
       return data.user;
