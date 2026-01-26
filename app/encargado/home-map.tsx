@@ -4,7 +4,7 @@ import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,8 +13,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Heatmap, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { homeMapStyles } from '../../styles/encargado/home-mapStyles';
+
 
 interface Report {
   id: string;
@@ -35,6 +36,8 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  // Estado para alternar entre vista de marcadores y calor
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: -0.22985,
     longitude: -78.52495,
@@ -42,6 +45,16 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
     longitudeDelta: 0.05,
   });
   const [firebaseReady, setFirebaseReady] = useState(false);
+  
+  // Transformar reportes en puntos de calor con peso por prioridad
+  const heatmapPoints = useMemo(() => {
+    return reports.map(report => ({
+      latitude: report.location.latitude,
+      longitude: report.location.longitude,
+      // Prioridad alta pesa más en el mapa de calor
+      weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
+    }));
+  }, [reports]);
 
   useEffect(() => {
     // Esperar a que Firebase Auth esté listo
@@ -238,14 +251,31 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
             </View>
           </View>
         ) : (
-          <MapView
-            style={homeMapStyles.mapContainer}
-            provider={PROVIDER_GOOGLE}
-            region={mapRegion}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {reports.map((report) => (
+
+        <> 
+    {/* Leyenda */}
+        <MapView
+          style={homeMapStyles.mapContainer}
+          provider={PROVIDER_GOOGLE}
+          region={mapRegion}
+          showsUserLocation
+          showsMyLocationButton
+        >
+          {/* Capa de Calor condicional */}
+          {showHeatmap && reports.length > 0 ? (
+            <Heatmap
+              points={heatmapPoints}
+              radius={50}
+              opacity={0.8}
+              gradient={{
+                colors: ['#34d399', '#fbbf24', '#ef4444'], // Escala: Verde -> Amarillo -> Rojo
+                startPoints: [0.2, 0.5, 0.8],
+                colorMapSize: 2000,
+              }}
+            />
+          ) : (
+            /* Marcadores normales */
+            reports.map((report) => (
               <Marker
                 key={report.id}
                 coordinate={{
@@ -255,10 +285,12 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
                 pinColor={getPriorityColor(report.priority)}
                 onPress={() => setSelectedReport(report)}
               />
-            ))}
-          </MapView>
+            ))
+          )}
+        </MapView>
+        </> // Cierre del fragmento
         )}
-
+        
         {/* Leyenda */}
         <View style={homeMapStyles.legendContainer}>
           <Text style={homeMapStyles.legendTitle}>Prioridades</Text>
@@ -294,7 +326,28 @@ export default function EncargadoHomeMapScreen({ navigation }: any) {
         )}
       </View>
 
-      {/* Modal detalle del reporte */}
+            {/* Botón de control de Mapa de Calor */}
+      <TouchableOpacity
+        style={[
+          homeMapStyles.heatmapToggleButton, 
+          showHeatmap && homeMapStyles.heatmapToggleButtonActive
+        ]}
+        onPress={() => setShowHeatmap(!showHeatmap)}
+      >
+        <Image
+          source={require('@/assets/images/map-icon.png')}
+          style={[
+            { width: 24, height: 24 },
+            { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
+          ]}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+      <Text style={homeMapStyles.toggleLabel}>
+        {showHeatmap ? 'PUNTOS' : 'CALOR'}
+      </Text>
+
+ {/* Modal detalle del reporte */}
       {selectedReport && (
         <View style={homeMapStyles.reportDetailModal}>
           <View style={homeMapStyles.reportDetailHeader}>

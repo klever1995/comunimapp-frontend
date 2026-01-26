@@ -39,7 +39,7 @@ export default function AdminHomeTabs() {
                   source={iconSource}
                   style={[
                     homeStyles.tabIcon,
-                    { tintColor: focused ? '#2563EB' : '#94a3b8' }
+                    { tintColor: focused ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)' }
                   ]}
                   resizeMode="contain"
                 />

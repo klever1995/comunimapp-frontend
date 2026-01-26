@@ -1,11 +1,10 @@
-// app/admin/home-map.tsx
 import { useAuth } from '@/hooks/useAuth';
 import { db, auth as firebaseAuth } from '@/lib/firebase';
 import { homeMapStyles } from '@/styles/admin/home-mapStyles';
 import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, onSnapshot, query } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Heatmap, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
 
 interface Report {
   id: string;
@@ -38,16 +38,25 @@ export default function AdminHomeMapScreen({ navigation }: any) {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [firebaseReady, setFirebaseReady] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: -0.22985,
     longitude: -78.52495,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-  const [firebaseReady, setFirebaseReady] = useState(false);
+
+  // Cálculo optimizado de puntos para el mapa de calor
+  const heatmapPoints = useMemo(() => {
+    return reports.map(report => ({
+      latitude: report.location.latitude,
+      longitude: report.location.longitude,
+      weight: report.priority === 'alta' ? 3 : report.priority === 'media' ? 2 : 1
+    }));
+  }, [reports]);
 
   useEffect(() => {
-    // Esperar a que Firebase Auth esté listo
     const unsubscribeAuth = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
       if (firebaseUser) {
         setFirebaseReady(true);
@@ -56,7 +65,6 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         setReports([]);
       }
     });
-
     return () => unsubscribeAuth();
   }, []);
 
@@ -68,6 +76,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     // IMPORTANTE: Admin ve TODOS los reportes sin filtro
     const q = query(collection(db, 'reports'));
 
+    
     // Escuchar cambios en tiempo real
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const reportsData: Report[] = [];
@@ -77,12 +86,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         reportsData.push({
           id: doc.id,
           description: data.description || '',
-          location: data.location || { 
-            latitude: 0, 
-            longitude: 0, 
-            address: '', 
-            city: '' 
-          },
+          location: data.location || { latitude: 0, longitude: 0, address: '', city: '' },
           priority: data.priority || 'media',
           status: data.status || 'pendiente',
           created_at: data.created_at?.toDate?.()?.toISOString() || new Date().toISOString(),
@@ -103,7 +107,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
           longitudeDelta: 0.05,
         });
       }
-
+      
       setLoading(false);
     }, (error) => {
       console.error('Error escuchando reportes:', error);
@@ -114,36 +118,39 @@ export default function AdminHomeMapScreen({ navigation }: any) {
     return () => unsubscribe();
   }, [user?.id, firebaseReady]);
 
-  // Función para manejar el logout
-  const handleLogout = async () => {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro de que quieres cerrar sesión?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Cerrar sesión en Firebase
-              await firebaseAuth.signOut();
-              // Limpiar autenticación de tu contexto
-              await logout();
-              // Navegar a la pantalla de login (Expo Router)
-              router.replace('/');
-            } catch (error) {
-              console.error('Error al cerrar sesión:', error);
-              Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
-            }
+
+
+    // Función para manejar el logout
+    const handleLogout = async () => {
+      Alert.alert(
+        'Cerrar sesión',
+        '¿Estás seguro de que quieres cerrar sesión?',
+        [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
           },
-        },
-      ]
-    );
-  };
+          {
+            text: 'Cerrar sesión',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                // Cerrar sesión en Firebase
+                await firebaseAuth.signOut();
+                // Limpiar autenticación de tu contexto
+                await logout();
+                // Navegar a la pantalla de login (Expo Router)
+                router.replace('/');
+              } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                Alert.alert('Error', 'No se pudo cerrar sesión. Intenta nuevamente.');
+              }
+            },
+          },
+        ]
+      );
+    };
+
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -226,9 +233,7 @@ export default function AdminHomeMapScreen({ navigation }: any) {
         {loading ? (
           <View style={homeMapStyles.loadingContainer}>
             <ActivityIndicator size="large" color="#2563EB" />
-            <Text style={{ marginTop: 10, color: '#64748b' }}>
-              Cargando todos los reportes...
-            </Text>
+            <Text style={{ marginTop: 10, color: '#64748b' }}>Cargando todos los reportes...</Text>
           </View>
         ) : reports.length === 0 ? (
           <View style={homeMapStyles.placeholderContainer}>
@@ -238,16 +243,16 @@ export default function AdminHomeMapScreen({ navigation }: any) {
                 style={homeMapStyles.mapIcon}
                 resizeMode="contain"
               />
-              <Text style={homeMapStyles.mapPlaceholderText}>
-                No hay reportes registrados
-                {'\n'}
-                <Text style={{ fontSize: 14, color: '#94a3b8' }}>
-                  Los reportes creados aparecerán aquí automáticamente
+                <Text style={homeMapStyles.mapPlaceholderText}>
+                  No hay reportes registrados
+                  {'\n'}
+                  <Text style={{ fontSize: 14, color: '#94a3b8' }}>
+                    Los reportes creados aparecerán aquí automáticamente
+                  </Text>
                 </Text>
-              </Text>
+              </View>
             </View>
-          </View>
-        ) : (
+          ) : (
           <MapView
             style={homeMapStyles.mapContainer}
             provider={PROVIDER_GOOGLE}
@@ -255,42 +260,70 @@ export default function AdminHomeMapScreen({ navigation }: any) {
             showsUserLocation
             showsMyLocationButton
           >
-            {reports.map((report) => (
-              <Marker
-                key={report.id}
-                coordinate={{
-                  latitude: report.location.latitude,
-                  longitude: report.location.longitude,
+            {showHeatmap ? (
+              <Heatmap
+                points={heatmapPoints}
+                radius={50}
+                opacity={0.8}
+                gradient={{
+                  colors: ['#34d399', '#fbbf24', '#ef4444'],
+                  startPoints: [0.2, 0.5, 0.8],
+                  colorMapSize: 2000,
                 }}
-                pinColor={getPriorityColor(report.priority)}
-                onPress={() => setSelectedReport(report)}
               />
-            ))}
+            ) : (
+              reports.map((report) => (
+                <Marker
+                  key={report.id}
+                  coordinate={{
+                    latitude: report.location.latitude,
+                    longitude: report.location.longitude,
+                  }}
+                  pinColor={getPriorityColor(report.priority)}
+                  onPress={() => setSelectedReport(report)}
+                />
+              ))
+            )}
           </MapView>
         )}
 
-        {/* Leyenda */}
         <View style={homeMapStyles.legendContainer}>
           <Text style={homeMapStyles.legendTitle}>Prioridades</Text>
-
           <View style={homeMapStyles.legendItem}>
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#ef4444' }]} />
             <Text style={homeMapStyles.legendText}>Alta prioridad</Text>
           </View>
-
           <View style={homeMapStyles.legendItem}>
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#f97316' }]} />
             <Text style={homeMapStyles.legendText}>Media prioridad</Text>
           </View>
-
           <View style={homeMapStyles.legendItem}>
             <View style={[homeMapStyles.legendColor, { backgroundColor: '#22c55e' }]} />
             <Text style={homeMapStyles.legendText}>Baja prioridad</Text>
           </View>
         </View>
 
+        {/* Botón de Alternancia de Mapa de Calor */}
+        <TouchableOpacity
+          style={[
+            homeMapStyles.heatmapToggleButton, 
+            showHeatmap && homeMapStyles.heatmapToggleButtonActive
+          ]}
+          onPress={() => setShowHeatmap(!showHeatmap)}
+        >
+          <Image
+            source={require('@/assets/images/map-icon.png')}
+            style={[
+              { width: 24, height: 24 },
+              { tintColor: showHeatmap ? '#FFFFFF' : '#2563EB' }
+            ]}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <Text style={homeMapStyles.toggleLabel}>{showHeatmap ? 'PUNTOS' : 'CALOR'}</Text>
+
         {/* Botón flotante para ver detalles (si hay reporte seleccionado) */}
-        {selectedReport && (
+        {selectedReport && !showHeatmap && (
           <TouchableOpacity
             style={homeMapStyles.floatingReportButton}
             onPress={() => handleViewReportDetails(selectedReport.id)}
