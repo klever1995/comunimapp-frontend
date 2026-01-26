@@ -1,5 +1,7 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+app.json
+
 # dependencies
 node_modules/
 
@@ -45,10 +47,12 @@ app-example
 # Variables de entorno específicas
 .env
 
+google-services.json
+.envgoogle-services.json
+
 # Ignorar archivos comprimidos
 *.zip
 
 # Ignorar imágenes nuevas que no quiero subir todavía
 assets/images/
 app/notification.tsx
-google-services.json
