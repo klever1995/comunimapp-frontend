@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { registerStyles } from '../styles/registerStyles';
 
 // Componente de Notificación Mejorado
@@ -98,7 +97,7 @@ export default function RegisterScreen() {
   };
 
   const handleRegister = async () => {
-    // Validaciones
+    // Validaciones (EXACTAMENTE IGUAL)
     if (!nombreCompleto.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       showToast('Por favor completa todos los campos', 'warning');
       return;
@@ -115,7 +114,6 @@ export default function RegisterScreen() {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+(\.[^\s@]+)*$/;
-
     if (!emailRegex.test(email.trim())) {
       showToast('Por favor ingresa un correo electrónico válido', 'warning');
       return;
@@ -193,9 +191,11 @@ export default function RegisterScreen() {
       >
         {/* Header */}
         <View style={registerStyles.header}>
-          <Text style={registerStyles.title}>Crear cuenta</Text>
+          <Text style={registerStyles.title}>
+            Crear <Text style={registerStyles.titleGradient}>Cuenta</Text>
+          </Text>
           <Text style={registerStyles.subtitle}>
-            Regístrate para contribuir de forma segura al monitoreo de zonas de vulnerabilidad
+            Únete a la red de monitoreo de protección infantil
           </Text>
         </View>
 
@@ -234,7 +234,6 @@ export default function RegisterScreen() {
                 editable={!isLoading}
               />
             </View>
-          </View>
 
           {/* Contraseña */}
           <View style={registerStyles.inputGroup}>
@@ -260,9 +259,18 @@ export default function RegisterScreen() {
                   size={22}
                   color="#64748B"
                 />
-              </TouchableOpacity>
+                <TextInput
+                  style={registerStyles.input}
+                  placeholder="correo@ejemplo.com"
+                  placeholderTextColor="#64748B"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  editable={!isLoading}
+                />
+              </View>
             </View>
-          </View>
 
           {/* Confirmar Contraseña */}
           <View style={registerStyles.inputGroup}>
@@ -288,9 +296,31 @@ export default function RegisterScreen() {
                   size={22}
                   color="#64748B"
                 />
-              </TouchableOpacity>
+                <TextInput
+                  style={registerStyles.input}
+                  placeholder="Mínimo 6 caracteres"
+                  placeholderTextColor="#64748B"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity
+                  style={registerStyles.eyeButton}
+                  onPress={toggleShowPassword}
+                  disabled={isLoading}
+                >
+                  <Image
+                    source={showPassword
+                      ? require('@/assets/images/ver.png')
+                      : require('@/assets/images/no_ver.png')
+                    }
+                    style={registerStyles.eyeIcon}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
           <View style={registerStyles.divider} />
 
@@ -308,17 +338,41 @@ export default function RegisterScreen() {
                 <Text style={registerStyles.loginButtonText}>Registrarse</Text>
                 <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
               </View>
-            )}
-          </TouchableOpacity>
+            </View>
 
-          <View style={registerStyles.linksContainer}>
-            <TouchableOpacity onPress={handleLoginRedirect}>
-              <Text style={registerStyles.linkText}>
-                ¿Ya tienes cuenta?{' '}
-                <Text style={registerStyles.registerHighlight}>Iniciar Sesión</Text>
-              </Text>
+            {/* Separador decorativo COMPACTADO */}
+            <View style={registerStyles.dividerContainer}>
+              <View style={registerStyles.dividerLine} />
+              <View style={registerStyles.dividerLine} />
+            </View>
+
+            {/* Botón de Registro con gradiente */}
+            <TouchableOpacity
+              style={[registerStyles.registerButton, isLoading && registerStyles.registerButtonDisabled]}
+              onPress={handleRegister}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={isLoading ? ['#475569', '#475569'] : ['#00D4FF', '#0066FF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={registerStyles.buttonGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <View style={registerStyles.buttonContent}>
+                    <Text style={registerStyles.buttonText}>CREAR CUENTA</Text>
+                    <Image
+                      source={require('@/assets/images/registro.png')}
+                      style={registerStyles.buttonIcon}
+                      resizeMode="contain"
+                    />
+                  </View>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
-          </View>
 
           <View style={registerStyles.securityContainer}>
             <Ionicons name="shield-checkmark-outline" size={16} color="#94a3b8" />
@@ -326,8 +380,8 @@ export default function RegisterScreen() {
               Tu información será tratada de forma segura y confidencial
             </Text>
           </View>
-        </View>
-      </KeyboardAwareScrollView>
+        </BlurView>
+      </View>
     </SafeArea>
   );
 }

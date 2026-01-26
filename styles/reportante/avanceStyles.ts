@@ -1,15 +1,93 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export const avanceStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#e0ebf7ff',
   },
+  
+  // HEADER CON GRADIENTE
+  headerContainer: {
+    backgroundColor: '#667eea',
+    paddingTop: 10,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontFamily: 'Inter_700Bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    fontFamily: 'Inter_400Regular',
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  
+  // STATS CARDS - SOBREPUESTAS AL HEADER
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 24,
+    marginTop: -10,
+    marginBottom: 20,
+  },
+  statCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    width: (width - 64) / 3,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+  },
+  statValue: {
+    fontSize: 23,
+    fontFamily: 'Inter_900Black',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter_900Black',
+    color: '#64748B',
+    textTransform: 'uppercase',
+  },
+  
+  // CONTENEDOR DEL SCROLL
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingVertical: 16,
+    paddingBottom: 40,
   },
+  
+  // CONTADOR DE RESULTADOS
+  resultsCounter: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  resultsCounterText: {
+    fontFamily: 'Roboto_500Medium',
+    fontSize: 14,
+    color: '#64748b',
+  },
+  
+  // HEADER ORIGINAL (alternativo)
   header: {
     alignItems: 'center',
     marginBottom: 24,
@@ -31,6 +109,8 @@ export const avanceStyles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 8,
   },
+  
+  // INFORMACIÓN DEL REPORTE
   reportInfoCard: {
     backgroundColor: '#f8fafc',
     borderWidth: 1,
@@ -53,7 +133,7 @@ export const avanceStyles = StyleSheet.create({
     width: 18,
     height: 18,
     marginRight: 8,
-    resizeMode: 'contain', // ✅ AÑADIDO
+    resizeMode: 'contain',
   },
   reportLocation: {
     fontFamily: 'Roboto_600SemiBold',
@@ -87,6 +167,8 @@ export const avanceStyles = StyleSheet.create({
     color: '#2563EB',
     textTransform: 'capitalize',
   },
+  
+  // LISTA DE ACTUALIZACIONES
   updatesList: {
     gap: 16,
   },
@@ -117,7 +199,7 @@ export const avanceStyles = StyleSheet.create({
     width: 20,
     height: 20,
     marginRight: 8,
-    resizeMode: 'contain', // ✅ AÑADIDO
+    resizeMode: 'contain',
   },
   updateTypeText: {
     fontFamily: 'Roboto_600SemiBold',
@@ -138,6 +220,18 @@ export const avanceStyles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
   },
+  
+  // ESTILO PARA EL BADGE DE TIPO DE ACTUALIZACIÓN (nuevo)
+  updateTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  
+  // CAMBIO DE ESTADO
   statusChangeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,13 +244,15 @@ export const avanceStyles = StyleSheet.create({
     width: 16,
     height: 16,
     marginRight: 8,
-    resizeMode: 'contain', // ✅ AÑADIDO
+    resizeMode: 'contain',
   },
   statusChangeText: {
     fontFamily: 'Roboto_500Medium',
     fontSize: 13,
     color: '#0369a1',
   },
+  
+  // IMÁGENES
   imagesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -181,8 +277,27 @@ export const avanceStyles = StyleSheet.create({
     width: 24,
     height: 24,
     opacity: 0.5,
-    resizeMode: 'contain', // ✅ AÑADIDO
+    resizeMode: 'contain',
   },
+  
+  // CONTENEDOR DE FECHA
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateIcon: {
+    width: 14,
+    height: 14,
+    marginRight: 6,
+    opacity: 0.7,
+  },
+  dateText: {
+    fontFamily: 'Roboto_400Regular',
+    fontSize: 13,
+    color: '#64748b',
+  },
+  
+  // LOADING Y ESTADOS DE ERROR
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

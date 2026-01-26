@@ -1,7 +1,9 @@
+// app/encargado/crear-avance.tsx - MODIFICADO SIN BORDE INFERIOR
 import { SafeArea } from '@/components/ui/safe-area';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +17,7 @@ import {
   View
 } from 'react-native';
 import { crearAvanceStyles } from '../../styles/encargado/crear-avanceStyles';
+import { registerStyles } from '../../styles/registerStyles';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -270,282 +273,366 @@ export default function CrearAvanceScreen() {
 
   if (loadingReport) {
     return (
-      <View style={crearAvanceStyles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563EB" />
-        <Text style={{ marginTop: 10, color: '#64748b' }}>
-          Cargando información del reporte...
-        </Text>
-      </View>
+      <SafeArea>
+        <View style={[registerStyles.container, {justifyContent: 'center'}]}>
+          <LinearGradient
+            colors={['#0A0F24', '#0D1B2A', '#1B263B']}
+            style={registerStyles.backgroundGradient}
+          />
+          <ActivityIndicator size="large" color="#00D4FF" />
+          <Text style={{ marginTop: 15, color: '#CBD5E1', fontSize: 14 }}>
+            Cargando información del reporte...
+          </Text>
+        </View>
+      </SafeArea>
     );
   }
 
   if (errorMessage && !reportInfo) {
     return (
-      <View style={crearAvanceStyles.errorContainer}>
-        <Text style={crearAvanceStyles.errorText}>
-          {errorMessage}
-        </Text>
-        <TouchableOpacity 
-          style={crearAvanceStyles.sendButton}
-          onPress={() => router.back()}
-        >
-          <Text style={crearAvanceStyles.sendButtonText}>Volver</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeArea>
+        <View style={[registerStyles.container, {justifyContent: 'center'}]}>
+          <LinearGradient
+            colors={['#0A0F24', '#0D1B2A', '#1B263B']}
+            style={registerStyles.backgroundGradient}
+          />
+          <Text style={{ color: '#FF416C', fontSize: 16, textAlign: 'center', marginBottom: 20 }}>
+            {errorMessage}
+          </Text>
+          <TouchableOpacity 
+            style={[registerStyles.registerButton, {width: '60%'}]}
+            onPress={() => router.back()}
+          >
+            <LinearGradient
+              colors={['#00D4FF', '#0066FF']}
+              style={registerStyles.buttonGradient}
+            >
+              <Text style={registerStyles.buttonText}>Volver</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </SafeArea>
     );
   }
 
   return (
     <SafeArea>
-    <ScrollView 
-      contentContainerStyle={crearAvanceStyles.scrollContent}
-      showsVerticalScrollIndicator={false}
-      style={crearAvanceStyles.container}
-    >
-      <View style={crearAvanceStyles.header}>
-        <Text style={crearAvanceStyles.headerTitle}>Nuevo Avance</Text>
-        <Text style={crearAvanceStyles.headerSubtitle}>
-          Agrega una actualización al reporte asignado
-        </Text>
-      </View>
-
-      {successMessage ? (
-        <View style={[crearAvanceStyles.messageContainer, crearAvanceStyles.successContainer]}>
-          <Text style={[crearAvanceStyles.messageText, crearAvanceStyles.successText]}>
-            {successMessage}
-          </Text>
-        </View>
-      ) : null}
-      
-      {errorMessage ? (
-        <View style={[crearAvanceStyles.messageContainer, crearAvanceStyles.errorContainer]}>
-          <Text style={[crearAvanceStyles.messageText, crearAvanceStyles.errorText]}>
-            {errorMessage}
-          </Text>
-        </View>
-      ) : null}
-
-      {/* Información del reporte */}
-      {reportInfo && (
-        <View style={crearAvanceStyles.reportInfoSection}>
-          <Text style={crearAvanceStyles.reportInfoTitle}>Reporte asignado</Text>
-          <View style={crearAvanceStyles.reportInfoCard}>
-            <View style={crearAvanceStyles.reportInfoHeader}>
-              <Image
-                source={require('@/assets/images/location.png')}
-                style={crearAvanceStyles.locationIcon}
-                resizeMode="contain"
-              />
-              <Text style={crearAvanceStyles.reportInfoText}>
-                {reportInfo.location.address}
-                {reportInfo.location.city ? `, ${reportInfo.location.city}` : ''}
-              </Text>
-            </View>
-            <Text style={crearAvanceStyles.reportDescription}>
-              {reportInfo.description}
-            </Text>
-            <View style={{ 
-              flexDirection: 'row', 
-              justifyContent: 'space-between',
-              marginTop: 12,
-              paddingTop: 12,
-              borderTopWidth: 1,
-              borderTopColor: '#e2e8f0'
-            }}>
-              <Text style={{
-                fontFamily: 'Montserrat_500Medium',
-                fontSize: 13,
-                color: '#64748b',
-              }}>
-                Estado actual:
-              </Text>
-              <Text style={{
-                fontFamily: 'Roboto_600SemiBold',
-                fontSize: 13,
-                color: getStatusColor(reportInfo.status),
-              }}>
-                {reportInfo.status.replace('_', ' ')}
-              </Text>
-            </View>
-          </View>
-        </View>
-      )}
-
-      <View style={crearAvanceStyles.divider} />
-
-      {/* Sección de fotos */}
-      <View style={crearAvanceStyles.photosSection}>
-        <Text style={crearAvanceStyles.photosTitle}>Agregar foto (opcional)</Text>
-        <View style={crearAvanceStyles.photosContainer}>
-          <TouchableOpacity 
-            style={crearAvanceStyles.addPhotoButton}
-            onPress={pickImage}
-            disabled={images.length >= 5}
-          >
-            <Image
-              source={require('@/assets/images/camera.png')}
-              style={crearAvanceStyles.addPhotoIcon}
-              resizeMode="contain"
-            />
-            <Text style={crearAvanceStyles.addPhotoText}>
-              {images.length}/5 fotos
-            </Text>
-          </TouchableOpacity>
-          
-          {images.map((uri, index) => (
-            <View key={index} style={crearAvanceStyles.photoItem}>
-              <Image 
-                source={{ uri }} 
-                style={crearAvanceStyles.photoImage} 
-                resizeMode="cover"
-              />
-              <TouchableOpacity 
-                style={crearAvanceStyles.removePhotoButton}
-                onPress={() => removeImage(index)}
-              >
-                <Text style={crearAvanceStyles.removePhotoText}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      <View style={crearAvanceStyles.divider} />
-
-      {/* Sección de mensaje */}
-      <View style={crearAvanceStyles.messageSection}>
-        <Text style={crearAvanceStyles.messageTitle}>Mensaje del avance</Text>
-        <TextInput
-          style={crearAvanceStyles.messageInput}
-          placeholder="Describe los avances realizados, observaciones o comentarios (mínimo 5 caracteres)"
-          placeholderTextColor="#94a3b8"
-          value={message}
-          onChangeText={setMessage}
-          multiline
-          maxLength={1000}
+      <View style={[registerStyles.container, { paddingBottom: 0 }]}>
+        {/* Fondo con gradiente */}
+        <LinearGradient
+          colors={['#0A0F24', '#0D1B2A', '#1B263B']}
+          style={registerStyles.backgroundGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         />
-        <Text style={[
-          crearAvanceStyles.characterCount,
-          message.length < 5 ? crearAvanceStyles.characterCountError : 
-          message.length >= 5 ? crearAvanceStyles.characterCountValid : {}
-        ]}>
-          {message.length}/1000 caracteres • {message.length < 5 ? 
-            `Faltan ${5 - message.length} caracteres` : '✓ Válido'}
-        </Text>
-      </View>
-
-      {/* Sección de tipo de actualización */}
-      <View style={crearAvanceStyles.updateTypeSection}>
-        <Text style={crearAvanceStyles.updateTypeTitle}>Tipo de actualización</Text>
-        <View style={crearAvanceStyles.updateTypeOptions}>
-          {/* Mostrar solo 3 opciones: AVANCE, OBSERVACION, CAMBIO_ESTADO */}
-          {[UpdateType.AVANCE, UpdateType.OBSERVACION, UpdateType.CAMBIO_ESTADO].map((type) => (
-            <TouchableOpacity 
-              key={type}
-              style={[
-                crearAvanceStyles.updateTypeButton,
-                updateType === type && crearAvanceStyles.updateTypeButtonSelected
-              ]}
-              onPress={() => setUpdateType(type)}
-            >
-              <Image
-                source={getUpdateTypeIcon(type)}
-                style={[
-                  crearAvanceStyles.updateTypeIcon,
-                  {tintColor: updateType === type ? '#2563EB' : '#94a3b8'}
-                ]}
-                resizeMode="contain"
-              />
-              <Text style={[
-                crearAvanceStyles.updateTypeLabel,
-                updateType === type && crearAvanceStyles.updateTypeButtonSelectedText
-              ]}>
-                {getUpdateTypeText(type)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        
+        {/* Partículas decorativas */}
+        <View style={registerStyles.particlesContainer}>
+          <View style={registerStyles.particle1} />
+          <View style={registerStyles.particle2} />
+          <View style={registerStyles.particle3} />
         </View>
-      </View>
 
-      {/* Sección de cambio de estado (SOLO cuando se selecciona CAMBIO_ESTADO) */}
-      {updateType === UpdateType.CAMBIO_ESTADO && (
-        <View style={crearAvanceStyles.statusSection}>
-          <Text style={crearAvanceStyles.statusTitle}>Seleccionar nuevo estado</Text>
-          <Text style={{
-            fontFamily: 'Montserrat_400Regular',
-            fontSize: 13,
-            color: '#64748b',
-            marginBottom: 15,
-          }}>
-            Estado actual: <Text style={{color: getStatusColor(reportInfo?.status || '')}}>
-              {reportInfo?.status?.replace('_', ' ') || 'No disponible'}
-            </Text>
+        {/* Header moderno */}
+        <View style={registerStyles.header}>
+          <Text style={registerStyles.title}>
+            Nuevo <Text style={registerStyles.titleGradient}>Avance</Text>
           </Text>
-          <View style={crearAvanceStyles.statusOptions}>
-            {getVisibleStatuses().map((status) => (
+          <Text style={registerStyles.subtitle}>
+            Agrega una actualización al reporte asignado
+          </Text>
+        </View>
+
+        <ScrollView 
+          contentContainerStyle={{ paddingBottom: 0 }}
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+        >
+          {/* Mensajes de éxito/error */}
+          {successMessage ? (
+            <View style={[crearAvanceStyles.messageContainer, crearAvanceStyles.successContainer, {marginHorizontal: 20}]}>
+              <Text style={[crearAvanceStyles.messageText, crearAvanceStyles.successText]}>
+                {successMessage}
+              </Text>
+            </View>
+          ) : null}
+          
+          {errorMessage ? (
+            <View style={[crearAvanceStyles.messageContainer, crearAvanceStyles.errorContainer, {marginHorizontal: 20}]}>
+              <Text style={[crearAvanceStyles.messageText, crearAvanceStyles.errorText]}>
+                {errorMessage}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Información del reporte */}
+          {reportInfo && (
+            <View style={registerStyles.inputGroup}>
+              <Text style={registerStyles.inputLabel}>REPORTE ASIGNADO</Text>
+              <View style={[
+                registerStyles.inputContainer,
+                { flexDirection: 'column', alignItems: 'flex-start', padding: 16, height: 'auto' }
+              ]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12, width: '100%' }}>
+                  <Image
+                    source={require('@/assets/images/location.png')}
+                    style={registerStyles.leftIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={[registerStyles.input, { flex: 1 }]}>
+                    {reportInfo.location.address}
+                    {reportInfo.location.city ? `, ${reportInfo.location.city}` : ''}
+                  </Text>
+                </View>
+                
+                <Text style={{
+                  fontFamily: 'Montserrat_400Regular',
+                  fontSize: 14,
+                  color: '#CBD5E1',
+                  lineHeight: 20,
+                  marginBottom: 12,
+                }}>
+                  {reportInfo.description}
+                </Text>
+                
+                <View style={{ 
+                  flexDirection: 'row', 
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  marginTop: 12,
+                  paddingTop: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: 'rgba(255, 255, 255, 0.1)'
+                }}>
+                  <Text style={{
+                    fontFamily: 'Montserrat_500Medium',
+                    fontSize: 13,
+                    color: '#94A3B8',
+                  }}>
+                    Estado actual:
+                  </Text>
+                  <Text style={{
+                    fontFamily: 'Roboto_600SemiBold',
+                    fontSize: 13,
+                    color: getStatusColor(reportInfo.status),
+                  }}>
+                    {reportInfo.status.replace('_', ' ')}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Sección de fotos */}
+          <View style={registerStyles.inputGroup}>
+            <Text style={registerStyles.inputLabel}>AGREGAR FOTOS (OPCIONAL)</Text>
+            <View style={crearAvanceStyles.photosContainer}>
               <TouchableOpacity 
-                key={status}
-                style={[
-                  crearAvanceStyles.statusButton,
-                  newStatus === status && crearAvanceStyles.statusButtonSelected
-                ]}
-                onPress={() => setNewStatus(status === newStatus ? null : status)}
+                style={crearAvanceStyles.addPhotoButton}
+                onPress={pickImage}
+                disabled={images.length >= 5}
               >
-                <Text style={[
-                  crearAvanceStyles.statusLabel,
-                  newStatus === status && crearAvanceStyles.statusButtonSelectedText
-                ]}>
-                  {status.replace('_', ' ')}
+                <Image
+                  source={require('@/assets/images/camera.png')}
+                  style={crearAvanceStyles.addPhotoIcon}
+                  resizeMode="contain"
+                />
+                <Text style={crearAvanceStyles.addPhotoText}>
+                  {images.length}/5 fotos
                 </Text>
               </TouchableOpacity>
-            ))}
+              
+              {images.map((uri, index) => (
+                <View key={index} style={crearAvanceStyles.photoItem}>
+                  <Image 
+                    source={{ uri }} 
+                    style={crearAvanceStyles.photoImage} 
+                    resizeMode="cover"
+                  />
+                  <TouchableOpacity 
+                    style={crearAvanceStyles.removePhotoButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Text style={crearAvanceStyles.removePhotoText}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
           </View>
-          <Text style={{
-            fontFamily: 'Montserrat_400Regular',
-            fontSize: 12,
-            color: '#94a3b8',
-            marginTop: 10,
-            fontStyle: 'italic',
-          }}>
-            * Selecciona el nuevo estado del reporte
-          </Text>
-        </View>
-      )}
 
-      {/* Botón de enviar */}
-      <TouchableOpacity
-        style={[
-          crearAvanceStyles.sendButton,
-          (message.length < 5 || isLoading || (updateType === UpdateType.CAMBIO_ESTADO && !newStatus)) && crearAvanceStyles.sendButtonDisabled
-        ]}
-        onPress={submitAvance}
-        disabled={message.length < 5 || isLoading || (updateType === UpdateType.CAMBIO_ESTADO && !newStatus)}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <>
-            <Image
-              source={require('@/assets/images/send.png')}
-              style={crearAvanceStyles.sendIcon}
-              resizeMode="contain"
-            />
-            <Text style={crearAvanceStyles.sendButtonText}>
-              Enviar {updateType === UpdateType.CAMBIO_ESTADO ? 'cambio de estado' : 'avance'}
+          {/* Sección de mensaje */}
+          <View style={registerStyles.inputGroup}>
+            <Text style={registerStyles.inputLabel}>MENSAJE DEL AVANCE</Text>
+            <View style={[
+              registerStyles.inputContainer,
+              { height: 'auto', minHeight: 120, alignItems: 'flex-start' }
+            ]}>
+              <TextInput
+                style={[
+                  registerStyles.input,
+                  { 
+                    flex: 1, 
+                    textAlignVertical: 'top',
+                    paddingTop: 14,
+                    minHeight: 100 
+                  }
+                ]}
+                placeholder="Describe los avances realizados, observaciones o comentarios (mínimo 5 caracteres)"
+                placeholderTextColor="#64748B"
+                value={message}
+                onChangeText={setMessage}
+                multiline
+                maxLength={1000}
+              />
+            </View>
+            <Text style={{
+              fontSize: 12,
+              color: message.length >= 5 ? '#00D4FF' : '#FF416C',
+              marginTop: 6,
+              fontFamily: 'Roboto_400Regular'
+            }}>
+              {message.length}/1000 • {message.length < 5 ? 
+                `Faltan ${5 - message.length} caracteres` : '✓ Mensaje válido'}
             </Text>
-          </>
-        )}
-      </TouchableOpacity>
+          </View>
 
-      {isLoading && (
-        <View style={crearAvanceStyles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={{marginTop: 10, color: '#64748b'}}>
-            Enviando avance...
-          </Text>
-        </View>
-      )}
-    </ScrollView>
+          {/* Sección de tipo de actualización */}
+          <View style={registerStyles.inputGroup}>
+            <Text style={registerStyles.inputLabel}>TIPO DE ACTUALIZACIÓN</Text>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+              {[UpdateType.AVANCE, UpdateType.OBSERVACION, UpdateType.CAMBIO_ESTADO].map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={{
+                    flex: 1,
+                    backgroundColor: updateType === type 
+                      ? 'rgba(0, 212, 255, 0.1)' 
+                      : 'rgba(255, 255, 255, 0.05)',
+                    borderWidth: 2,
+                    borderColor: updateType === type 
+                      ? '#00D4FF' 
+                      : 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: 12,
+                    padding: 12,
+                    alignItems: 'center'
+                  }}
+                  onPress={() => setUpdateType(type)}
+                >
+                  <Image
+                    source={getUpdateTypeIcon(type)}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      tintColor: updateType === type ? '#00D4FF' : '#94A3B8',
+                      marginBottom: 6
+                    }}
+                    resizeMode="contain"
+                  />
+                  <Text style={{
+                    fontFamily: 'Roboto_600SemiBold',
+                    fontSize: 12,
+                    color: updateType === type ? '#FFFFFF' : '#94A3B8',
+                    textAlign: 'center'
+                  }}>
+                    {getUpdateTypeText(type)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Sección de cambio de estado (SOLO cuando se selecciona CAMBIO_ESTADO) */}
+          {updateType === UpdateType.CAMBIO_ESTADO && (
+            <View style={registerStyles.inputGroup}>
+              <Text style={registerStyles.inputLabel}>SELECCIONAR NUEVO ESTADO</Text>
+              <Text style={{
+                fontFamily: 'Montserrat_400Regular',
+                fontSize: 13,
+                color: '#94A3B8',
+                marginBottom: 12,
+              }}>
+                Estado actual: <Text style={{color: getStatusColor(reportInfo?.status || '')}}>
+                  {reportInfo?.status?.replace('_', ' ') || 'No disponible'}
+                </Text>
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                {getVisibleStatuses().map((status) => (
+                  <TouchableOpacity 
+                    key={status}
+                    style={{
+                      flex: 1,
+                      backgroundColor: newStatus === status 
+                        ? 'rgba(0, 212, 255, 0.1)' 
+                        : 'rgba(255, 255, 255, 0.05)',
+                      borderWidth: 2,
+                      borderColor: newStatus === status 
+                        ? '#00D4FF' 
+                        : 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: 12,
+                      padding: 12,
+                      alignItems: 'center'
+                    }}
+                    onPress={() => setNewStatus(status === newStatus ? null : status)}
+                  >
+                    <Text style={{
+                      fontFamily: newStatus === status ? 'Roboto_600SemiBold' : 'Roboto_500Medium',
+                      fontSize: 13,
+                      color: newStatus === status ? '#FFFFFF' : '#94A3B8',
+                    }}>
+                      {status.replace('_', ' ')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <Text style={{
+                fontFamily: 'Montserrat_400Regular',
+                fontSize: 11,
+                color: '#64748B',
+                marginTop: 8,
+                fontStyle: 'italic',
+              }}>
+                * Selecciona el nuevo estado del reporte
+              </Text>
+            </View>
+          )}
+
+          {/* Botón de enviar */}
+          <TouchableOpacity
+            style={[
+              registerStyles.registerButton,
+              (message.length < 5 || isLoading || (updateType === UpdateType.CAMBIO_ESTADO && !newStatus)) && 
+                registerStyles.registerButtonDisabled,
+              { marginTop: 20, marginBottom: 20 }
+            ]}
+            onPress={submitAvance}
+            disabled={message.length < 5 || isLoading || (updateType === UpdateType.CAMBIO_ESTADO && !newStatus)}
+          >
+            <LinearGradient
+              colors={isLoading || message.length < 5 || (updateType === UpdateType.CAMBIO_ESTADO && !newStatus) 
+                ? ['#475569', '#475569'] 
+                : ['#00D4FF', '#0066FF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={registerStyles.buttonGradient}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <View style={registerStyles.buttonContent}>
+                  <Text style={registerStyles.buttonText}>
+                    ENVIAR {updateType === UpdateType.CAMBIO_ESTADO ? 'CAMBIO DE ESTADO' : 'AVANCE'}
+                  </Text>
+                  <Image
+                    source={require('@/assets/images/send.png')}
+                    style={registerStyles.buttonIcon}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
     </SafeArea>
   );
 }

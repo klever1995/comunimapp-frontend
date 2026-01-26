@@ -1,10 +1,11 @@
-// app/admin/report.tsx - VERSIÓN CON TIEMPO REAL
+// app/admin/report.tsx - VERSIÓN CON TIEMPO REAL Y DISEÑO MEJORADO
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
 import { reportStyles } from '@/styles/admin/reportStyles';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { collection, onSnapshot, query } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react'; // AÑADIDO: useCallback
 import {
   ActivityIndicator,
   Alert,
@@ -43,16 +44,69 @@ interface User {
 
 type ReportStatus = 'pendiente' | 'asignado' | 'en_proceso' | 'resuelto' | 'cerrado';
 
+// AÑADIDO: Tipo para opciones de fecha
+type DateFilterOption = {
+  label: string;
+  value: string | null;
+};
+
 export default function AdminReportScreen() {
   const { authState: { user, token } } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
+  const [selectedDateOption, setSelectedDateOption] = useState<string>('todos'); // AÑADIDO: Estado para fecha
   const [encargados, setEncargados] = useState<User[]>([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [assigning, setAssigning] = useState(false);
+  
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [showStatusFilterModal, setShowStatusFilterModal] = useState(false);
+  const [showDateFilterModal, setShowDateFilterModal] = useState(false); // AÑADIDO: Modal para fecha
+
+  // AÑADIDO: Opciones de filtro de fecha
+  const dateOptions: DateFilterOption[] = [
+    { label: 'Todos', value: 'todos' },
+    { label: 'Hoy', value: 'hoy' },
+    { label: 'Ayer', value: 'ayer' },
+    { label: 'Última semana', value: 'semana' },
+    { label: 'Este mes', value: 'mes' },
+  ];
+
+  // AÑADIDO: Función para obtener rango de fechas
+  const getDateRange = (option: string) => {
+    const now = new Date();
+    const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    switch (option) {
+      case 'hoy': {
+        const start = startOfDay(now);
+        const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+        return { start, end };
+      }
+      case 'ayer': {
+        const start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const startOfYesterday = startOfDay(start);
+        const end = new Date(startOfYesterday.getTime() + 24 * 60 * 60 * 1000);
+        return { start: startOfYesterday, end };
+      }
+      case 'semana': {
+        const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return { start, end: now };
+      }
+      case 'mes': {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        return { start, end: now };
+      }
+      default:
+        return null;
+    }
+  };
 
   // Cargar reportes en tiempo real con Firestore
   useEffect(() => {
@@ -64,7 +118,6 @@ export default function AdminReportScreen() {
     
     setLoading(true);
     
-    // IMPORTANTE: Admin ve TODOS los reportes (sin filtro)
     const q = query(collection(db, 'reports'));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -84,12 +137,13 @@ export default function AdminReportScreen() {
           is_anonymous_public: data.is_anonymous_public || false,
         });
       });
-      // Ordenar por fecha (más recientes primero)
+      
       reportsData.sort((a, b) => {
         const dateA = a.created_at?.toDate?.() || new Date(0);
         const dateB = b.created_at?.toDate?.() || new Date(0);
         return dateB.getTime() - dateA.getTime();
       });
+      
       setReports(reportsData);
       setLoading(false);
     }, (error) => {
@@ -122,14 +176,37 @@ export default function AdminReportScreen() {
     }
   };
 
-  // Aplicar filtros
-  useEffect(() => {
+  // AÑADIDO: Función para aplicar filtros (con fecha)
+  const applyFilters = useCallback(() => {
     let filtered = [...reports];
+    
+    // Filtro por estado
     if (selectedStatus !== 'todos') {
       filtered = filtered.filter(report => report.status === selectedStatus);
     }
+    
+    // Filtro por fecha
+    if (selectedDateOption !== 'todos') {
+      const dateRange = getDateRange(selectedDateOption);
+      if (dateRange) {
+        filtered = filtered.filter(report => {
+          try {
+            const reportDate = report.created_at?.toDate?.() || new Date();
+            return reportDate >= dateRange.start && reportDate <= dateRange.end;
+          } catch {
+            return false;
+          }
+        });
+      }
+    }
+    
     setFilteredReports(filtered);
-  }, [reports, selectedStatus]);
+  }, [reports, selectedStatus, selectedDateOption]);
+
+  // AÑADIDO: Efecto para aplicar filtros
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -157,7 +234,6 @@ export default function AdminReportScreen() {
       return date.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: 'short',
-        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       });
@@ -166,9 +242,25 @@ export default function AdminReportScreen() {
     }
   };
 
-  // Función para asignar reporte a encargado (usa el endpoint FastAPI)
+  // Calcular conteos por prioridad para las stats cards
+  const priorityCounts = {
+    alta: reports.filter(r => r.priority === 'alta').length,
+    media: reports.filter(r => r.priority === 'media').length,
+    baja: reports.filter(r => r.priority === 'baja').length,
+  };
+
+  // Función para abrir visor de imágenes
+  const openImageGallery = (images: string[], startIndex: number) => {
+    setSelectedImages(images);
+    setSelectedImageIndex(startIndex);
+    setShowImageModal(true);
+  };
+
+  // Función para asignar reporte a encargado
   const handleAssignReport = async (encargadoId: string) => {
     if (!selectedReport || !token) return;
+
+    setAssigning(true);
     
     try {
       const response = await fetch(`${API_URL}/reports/${selectedReport.id}/assign?encargado_id=${encargadoId}`, {
@@ -181,7 +273,6 @@ export default function AdminReportScreen() {
       if (response.ok) {
         Alert.alert('Éxito', 'Reporte asignado correctamente');
         setShowAssignModal(false);
-        // No necesitamos fetchReports() porque onSnapshot actualizará automáticamente
       } else {
         const error = await response.json();
         Alert.alert('Error', error.detail || 'Error al asignar reporte');
@@ -189,10 +280,13 @@ export default function AdminReportScreen() {
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'No se pudo asignar el reporte');
-    }
-  };
+    }finally {
+    // NUEVO: Terminar estado de carga (siempre se ejecuta)
+    setAssigning(false);
+  }
+};
 
-  // Función para cambiar estado (usa el endpoint FastAPI)
+  // Función para cambiar estado
   const handleChangeStatus = async (newStatus: ReportStatus) => {
     if (!selectedReport || !token) return;
     
@@ -207,7 +301,6 @@ export default function AdminReportScreen() {
       if (response.ok) {
         Alert.alert('Éxito', 'Estado actualizado correctamente');
         setShowStatusModal(false);
-        // No necesitamos fetchReports() porque onSnapshot actualizará automáticamente
       } else {
         const error = await response.json();
         Alert.alert('Error', error.detail || 'Error al cambiar estado');
@@ -218,7 +311,7 @@ export default function AdminReportScreen() {
     }
   };
 
-  // Función para eliminar reporte (usa el endpoint FastAPI)
+  // Función para eliminar reporte
   const handleDeleteReport = (reportId: string) => {
     Alert.alert(
       'Confirmar eliminación',
@@ -239,7 +332,6 @@ export default function AdminReportScreen() {
               
               if (response.ok) {
                 Alert.alert('Éxito', 'Reporte eliminado correctamente');
-                // No necesitamos fetchReports() porque onSnapshot actualizará automáticamente
               } else {
                 const error = await response.json();
                 Alert.alert('Error', error.detail || 'Error al eliminar reporte');
@@ -257,7 +349,6 @@ export default function AdminReportScreen() {
   // Función para ver avances
   const handleViewAdvances = (reportId: string) => {
     router.push(`/admin/avances?reportId=${reportId}`);
-    // TODO: Navegar a /admin/avances?reportId=${reportId}
   };
 
   if (loading) {
@@ -281,68 +372,182 @@ export default function AdminReportScreen() {
 
   return (
     <View style={reportStyles.container}>
+      {/* Header con gradiente - NUEVO */}
+      <LinearGradient
+        colors={['#667eea', '#764ba2']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={reportStyles.headerContainer}
+      >
+        <Text style={reportStyles.headerTitle}>Gestión de Reportes</Text>
+        <Text style={reportStyles.headerSubtitle}>
+          Administra todos los reportes del sistema 
+        </Text>
+      </LinearGradient>
+
+      {/* 3 Cards de urgencia - NUEVO */}
+      <View style={reportStyles.statsContainer}>
+        <View style={[reportStyles.statCard, { borderColor: '#EF4444' }]}>
+          <Text style={[reportStyles.statValue, { color: '#EF4444' }]}>
+            {priorityCounts.alta}
+          </Text>
+          <Text style={[reportStyles.statLabel, { color: '#EF4444' }]}>Alta</Text>
+        </View>
+        
+        <View style={[reportStyles.statCard, { borderColor: '#fa8f15ff' }]}>
+          <Text style={[reportStyles.statValue, { color: '#fa8f15ff' }]}>
+            {priorityCounts.media}
+          </Text>
+          <Text style={[reportStyles.statLabel, { color: '#fa8f15ff' }]}>Media</Text>
+        </View>
+        
+        <View style={[reportStyles.statCard, { borderColor: '#22C55E' }]}>
+          <Text style={[reportStyles.statValue, { color: '#22C55E' }]}>
+            {priorityCounts.baja}
+          </Text>
+          <Text style={[reportStyles.statLabel, { color: '#22C55E' }]}>Baja</Text>
+        </View>
+      </View>
+
+      {/* Modal para filtro de estado - MEJORADO */}
+      <Modal
+        visible={showStatusFilterModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowStatusFilterModal(false)}
+      >
+        <TouchableOpacity 
+          style={reportStyles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowStatusFilterModal(false)}
+        >
+          <View style={reportStyles.modalContent}>
+            <Text style={reportStyles.modalTitle}>Filtrar por estado</Text>
+            {['todos', 'pendiente', 'asignado', 'en_proceso', 'resuelto', 'cerrado'].map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  reportStyles.modalOption,
+                  selectedStatus === status && reportStyles.modalOptionSelected
+                ]}
+                onPress={() => {
+                  setSelectedStatus(status);
+                  setShowStatusFilterModal(false);
+                }}
+              >
+                <Text style={[
+                  reportStyles.modalOptionText,
+                  selectedStatus === status && reportStyles.modalOptionTextSelected
+                ]}>
+                  {status === 'todos' ? 'Todos los estados' : status.replace('_', ' ')}
+                </Text>
+                {selectedStatus === status && (
+                  <Image
+                    source={require('@/assets/images/check.png')}
+                    style={reportStyles.modalCheckIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* AÑADIDO: Modal para filtro de fecha */}
+      <Modal
+        visible={showDateFilterModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDateFilterModal(false)}
+      >
+        <TouchableOpacity 
+          style={reportStyles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowDateFilterModal(false)}
+        >
+          <View style={reportStyles.modalContent}>
+            <Text style={reportStyles.modalTitle}>Filtrar por fecha</Text>
+            {dateOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  reportStyles.modalOption,
+                  selectedDateOption === option.value && reportStyles.modalOptionSelected
+                ]}
+                onPress={() => {
+                  setSelectedDateOption(option.value || 'todos');
+                  setShowDateFilterModal(false);
+                }}
+              >
+                <Text style={[
+                  reportStyles.modalOptionText,
+                  selectedDateOption === option.value && reportStyles.modalOptionTextSelected
+                ]}>
+                  {option.label}
+                </Text>
+                {selectedDateOption === option.value && (
+                  <Image
+                    source={require('@/assets/images/check.png')}
+                    style={reportStyles.modalCheckIcon}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <ScrollView 
         contentContainerStyle={reportStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={reportStyles.header}>
-          <Text style={reportStyles.title}>Gestión de Reportes</Text>
-          <Text style={reportStyles.subtitle}>
-            Administra todos los reportes del sistema (tiempo real)
-          </Text>
-        </View>
-
-        {/* Filtros */}
+        {/* Filtros desplegables - MEJORADO */}
         <View style={reportStyles.filtersContainer}>
           <TouchableOpacity 
-            style={reportStyles.filterButton}
-            onPress={() => {
-              Alert.alert(
-                'Filtrar por estado',
-                '',
-                [
-                  { text: 'Todos', onPress: () => setSelectedStatus('todos') },
-                  { text: 'Pendiente', onPress: () => setSelectedStatus('pendiente') },
-                  { text: 'Asignado', onPress: () => setSelectedStatus('asignado') },
-                  { text: 'En proceso', onPress: () => setSelectedStatus('en_proceso') },
-                  { text: 'Resuelto', onPress: () => setSelectedStatus('resuelto') },
-                  { text: 'Cerrado', onPress: () => setSelectedStatus('cerrado') },
-                  { text: 'Cancelar', style: 'cancel' }
-                ]
-              );
-            }}
+            style={reportStyles.filterDropdown}
+            onPress={() => setShowStatusFilterModal(true)}
           >
+            <View style={reportStyles.filterDropdownLeft}>
+              <Image 
+                source={require('@/assets/images/filtrar.png')}
+                style={reportStyles.filterIcon}
+              />
+              <Text style={reportStyles.filterDropdownText}>
+                {selectedStatus === 'todos' ? 'Estado' : selectedStatus.replace('_', ' ')}
+              </Text>
+            </View>
             <Image 
-              source={require('@/assets/images/filtrar.png')}
-              style={{ width: 20, height: 20, resizeMode: 'contain' }}
+              source={require('@/assets/images/nombre.png')}
+              style={reportStyles.filterArrowIcon}
             />
-            <Text style={reportStyles.filterButtonText}>
-              {selectedStatus === 'todos' ? 'Estado' : selectedStatus.replace('_', ' ')}
-            </Text>
           </TouchableOpacity>
 
+          {/* CAMBIO: "Tiempo real" cambiado a "Fecha" */}
           <TouchableOpacity 
-            style={[reportStyles.filterButton]}
-            onPress={() => {
-              // Botón informativo ya que es tiempo real
-              Alert.alert('Información', 'Los reportes se actualizan automáticamente en tiempo real');
-            }}
+            style={reportStyles.filterDropdown}
+            onPress={() => setShowDateFilterModal(true)}
           >
+            <View style={reportStyles.filterDropdownLeft}>
+              <Image 
+                source={require('@/assets/images/calendar.png')} 
+                style={reportStyles.filterIcon}
+              />
+              <Text style={reportStyles.filterDropdownText}>
+                {dateOptions.find(opt => opt.value === selectedDateOption)?.label || 'Fecha'}
+              </Text>
+            </View>
             <Image 
-              source={require('@/assets/images/edit.png')}
-              style={{ width: 20, height: 20, resizeMode: 'contain' }}
+              source={require('@/assets/images/nombre.png')}
+              style={reportStyles.filterArrowIcon}
             />
-            <Text style={reportStyles.filterButtonText}>
-              Tiempo real
-            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Contador */}
-        <View style={reportStyles.counterContainer}>
-          <Text style={reportStyles.counterText}>
-            Mostrando {filteredReports.length} de {reports.length} reportes
+        {/* Contador de resultados - MEJORADO */}
+        <View style={reportStyles.resultsCounter}>
+          <Text style={reportStyles.resultsCounterText}>
+            {filteredReports.length} {filteredReports.length === 1 ? 'resultado' : 'resultados'} 
+            {' '}de {reports.length} reportes totales
           </Text>
         </View>
 
@@ -368,20 +573,6 @@ export default function AdminReportScreen() {
                     { borderLeftWidth: 5, borderLeftColor: getPriorityColor(report.priority) }
                   ]}
                 >
-                  {/* Prioridad y Status */}
-                  <View style={reportStyles.statusBadges}>
-                    <View style={[reportStyles.priorityBadge, { backgroundColor: getPriorityColor(report.priority) }]}>
-                      <Text style={reportStyles.badgeText}>
-                        {report.priority.toUpperCase()}
-                      </Text>
-                    </View>
-                    <View style={[reportStyles.statusBadge, { backgroundColor: getStatusColor(report.status) }]}>
-                      <Text style={reportStyles.badgeText}>
-                        {report.status.replace('_', ' ').toUpperCase()}
-                      </Text>
-                    </View>
-                  </View>
-
                   {/* Encabezado con ubicación */}
                   <View style={reportStyles.reportHeader}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
@@ -410,6 +601,20 @@ export default function AdminReportScreen() {
                     </View>
                   </View>
 
+                  {/* Prioridad y Status */}
+                  <View style={reportStyles.statusBadges}>
+                    <View style={[reportStyles.priorityBadge, { backgroundColor: getPriorityColor(report.priority) }]}>
+                      <Text style={reportStyles.badgeText}>
+                        {report.priority.toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={[reportStyles.statusBadge, { backgroundColor: getStatusColor(report.status) }]}>
+                      <Text style={reportStyles.badgeText}>
+                        {report.status.replace('_', ' ').toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+
                   {/* Descripción */}
                   <Text style={reportStyles.descriptionText}>
                     {report.description}
@@ -433,18 +638,27 @@ export default function AdminReportScreen() {
                     )}
                   </View>
 
-                  {/* Imágenes */}
+                  {/* Imágenes - CON VISOR MODAL */}
                   {report.images && report.images.length > 0 && (
                     <View style={reportStyles.imagesContainer}>
                       {report.images.slice(0, 3).map((img, index) => (
-                        <Image
+                        <TouchableOpacity
                           key={index}
-                          source={{ uri: img }}
-                          style={reportStyles.imageThumbnail}
-                        />
+                          onPress={() => openImageGallery(report.images, index)}
+                          activeOpacity={0.7}
+                        >
+                          <Image
+                            source={{ uri: img }}
+                            style={reportStyles.imageThumbnail}
+                          />
+                        </TouchableOpacity>
                       ))}
                       {report.images.length > 3 && (
-                        <View style={reportStyles.imagePlaceholder}>
+                        <TouchableOpacity
+                          style={reportStyles.imagePlaceholder}
+                          onPress={() => openImageGallery(report.images, 3)}
+                          activeOpacity={0.7}
+                        >
                           <Image
                             source={require('@/assets/images/image.png')}
                             style={reportStyles.imagePlaceholderIcon}
@@ -452,7 +666,7 @@ export default function AdminReportScreen() {
                           <Text style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
                             +{report.images.length - 3}
                           </Text>
-                        </View>
+                        </TouchableOpacity>
                       )}
                     </View>
                   )}
@@ -474,11 +688,18 @@ export default function AdminReportScreen() {
                   <View style={reportStyles.actionsContainer}>
                     {/* Botón: Asignar */}
                     <TouchableOpacity
-                      style={[reportStyles.actionButton, { backgroundColor: '#3B82F6' }]}
+                      style={[
+                        reportStyles.actionButton, 
+                        reportStyles.assignButton,
+                        // NUEVO: Estilo cuando está deshabilitado
+                        report.status !== 'pendiente' && { opacity: 0.5 }
+                      ]}
                       onPress={() => {
                         setSelectedReport(report);
                         setShowAssignModal(true);
                       }}
+                      // NUEVO: Deshabilitar cuando no esté en estado pendiente
+                      disabled={report.status !== 'pendiente'}
                     >
                       <Image
                         source={require('@/assets/images/asignar.png')}
@@ -489,7 +710,7 @@ export default function AdminReportScreen() {
 
                     {/* Botón: Cambiar Estado */}
                     <TouchableOpacity
-                      style={[reportStyles.actionButton, { backgroundColor: '#8B5CF6' }]}
+                      style={[reportStyles.actionButton, reportStyles.statusButton]}
                       onPress={() => {
                         setSelectedReport(report);
                         setShowStatusModal(true);
@@ -504,7 +725,7 @@ export default function AdminReportScreen() {
 
                     {/* Botón: Ver Avances */}
                     <TouchableOpacity
-                      style={[reportStyles.actionButton, { backgroundColor: '#10B981' }]}
+                      style={[reportStyles.actionButton, reportStyles.advancesButton]}
                       onPress={() => handleViewAdvances(report.id)}
                     >
                       <Image
@@ -516,7 +737,7 @@ export default function AdminReportScreen() {
 
                     {/* Botón: Eliminar */}
                     <TouchableOpacity
-                      style={[reportStyles.actionButton, { backgroundColor: '#EF4444' }]}
+                      style={[reportStyles.actionButton, reportStyles.deleteButton]}
                       onPress={() => handleDeleteReport(report.id)}
                     >
                       <Image
@@ -537,7 +758,7 @@ export default function AdminReportScreen() {
       <Modal
         visible={showAssignModal}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
       >
         <View style={reportStyles.modalOverlay}>
           <View style={reportStyles.modalContainer}>
@@ -553,8 +774,12 @@ export default function AdminReportScreen() {
                 encargados.map((encargado) => (
                   <TouchableOpacity
                     key={encargado.id}
-                    style={reportStyles.modalItem}
+                    style={[
+                      reportStyles.modalItem,
+                      assigning && { opacity: 0.5 } // Añade opacidad cuando está cargando
+                    ]}
                     onPress={() => handleAssignReport(encargado.id)}
+                    disabled={assigning} 
                   >
                     <View style={reportStyles.modalItemContent}>
                       <Text style={reportStyles.modalItemText}>{encargado.username}</Text>
@@ -567,9 +792,39 @@ export default function AdminReportScreen() {
               )}
             </ScrollView>
             
+            {/* AÑADE ESTO JUSTO AQUÍ - OVERLAY DE CARGA */}
+            {assigning && (
+              <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 16,
+                zIndex: 10,
+              }}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+                <Text style={{ 
+                  marginTop: 10, 
+                  color: '#3B82F6', 
+                  fontFamily: 'Roboto_500Medium',
+                  fontSize: 16 
+                }}>
+                  Asignando reporte...
+                </Text>
+              </View>
+            )}
+            
             <TouchableOpacity
-              style={reportStyles.modalCancelButton}
+              style={[
+                reportStyles.modalCancelButton,
+                assigning && { opacity: 0.5 } // También deshabilitar botón cancelar
+              ]}
               onPress={() => setShowAssignModal(false)}
+              disabled={assigning}
             >
               <Text style={reportStyles.modalCancelText}>Cancelar</Text>
             </TouchableOpacity>
@@ -581,7 +836,7 @@ export default function AdminReportScreen() {
       <Modal
         visible={showStatusModal}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
       >
         <View style={reportStyles.modalOverlay}>
           <View style={reportStyles.modalContainer}>
@@ -612,6 +867,77 @@ export default function AdminReportScreen() {
               <Text style={reportStyles.modalCancelText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      {/* Modal para visor de imágenes */}
+      <Modal
+        visible={showImageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: 40,
+              right: 20,
+              zIndex: 10,
+              padding: 10,
+            }}
+            onPress={() => setShowImageModal(false)}
+          >
+            <Text style={{ color: '#FFFFFF', fontSize: 24 }}>✕</Text>
+          </TouchableOpacity>
+          
+          {selectedImages.length > 0 && (
+            <Image
+              source={{ uri: selectedImages[selectedImageIndex] }}
+              style={{
+                width: '95%',
+                height: '70%',
+                resizeMode: 'contain',
+              }}
+            />
+          )}
+          
+          {selectedImages.length > 1 && (
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: 20,
+              gap: 20,
+            }}>
+              <TouchableOpacity
+                onPress={() => setSelectedImageIndex(prev => 
+                  prev > 0 ? prev - 1 : selectedImages.length - 1
+                )}
+                disabled={selectedImages.length <= 1}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 24 }}>◀</Text>
+              </TouchableOpacity>
+              
+              <Text style={{ color: '#FFFFFF', fontSize: 16 }}>
+                {selectedImageIndex + 1} / {selectedImages.length}
+              </Text>
+              
+              <TouchableOpacity
+                onPress={() => setSelectedImageIndex(prev => 
+                  prev < selectedImages.length - 1 ? prev + 1 : 0
+                )}
+                disabled={selectedImages.length <= 1}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 24 }}>▶</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </Modal>
     </View>
