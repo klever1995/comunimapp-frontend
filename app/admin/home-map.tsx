@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
 
+
 interface Report {
   id: string;
   description: string;

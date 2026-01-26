@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 // Copia exacta de los estilos del reportante, podemos modificarlos después
 export const homeMapStyles = StyleSheet.create({
@@ -14,22 +14,30 @@ export const homeMapStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 15,
-    backgroundColor: '#FFFFFF',
+    paddingTop: Platform.OS === 'ios' ? 45 : 3, 
+    paddingBottom: 1,
+    backgroundColor: 'rgba(37, 99, 235, 0.9)',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
   headerTitle: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 22,
-    color: '#1e293b',
+  fontSize: 20, // Un poco más pequeño para ahorrar espacio
+  fontWeight: '800',
+  color: '#FFFFFF', // Texto blanco para contraste
+  letterSpacing: -0.5,
+},
+
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10, // Espaciado controlado entre elementos
   },
   notificationButton: {
     padding: 8,
     position: 'relative',
   },
-  notificationBadge: {
+
+    notificationBadge: {
     position: 'absolute',
     top: 2,
     right: 2,
@@ -37,29 +45,28 @@ export const homeMapStyles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
-  notificationIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#64748b',
-  },
-  
-  // Contenido del mapa
+
+notificationIcon: {
+  width: 24,
+  height: 24,
+  tintColor: '#FFFFFF', // Icono blanco
+},
+ // Contenido del mapa
   contentContainer: {
     flex: 1,
     position: 'relative',
   },
-  
-  // Mapa real
+
+    // Mapa real
   mapContainer: {
     flex: 1,
     width: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 20,
   },
   
-  // Placeholder cuando no hay reportes
+    // Placeholder cuando no hay reportes
   placeholderContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -94,47 +101,51 @@ export const homeMapStyles = StyleSheet.create({
     paddingHorizontal: 20,
     lineHeight: 24,
   },
+
   
-  // Leyenda de prioridades
+   // Leyenda de Cristal con bordes extra redondeados
   legendContainer: {
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: 10,
+    left: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 12,
     padding: 16,
-    width: 180,
+    width: 140,
     elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  legendTitle: {
+
+    legendTitle: {
     fontFamily: 'Roboto_700Bold',
     fontSize: 16,
-    color: '#1e293b',
-    marginBottom: 12,
+    color: '#64748B',
+    marginBottom: 5,
   },
+
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
+
   legendColor: {
-    width: 16,
-    height: 16,
+    width: 12,
+    height: 12,
     borderRadius: 8,
-    marginRight: 10,
+    marginRight: 5,
   },
   legendText: {
-    fontFamily: 'Montserrat_400Regular',
+    fontFamily: 'Montserrat_500Medium',
     fontSize: 14,
     color: '#475569',
   },
-  
-  // Botón flotante
-  floatingButton: {
+
+  // Botón flotante para ver detalles
+  floatingReportButton: {
     position: 'absolute',
     bottom: 30,
     right: 20,
@@ -156,7 +167,7 @@ export const homeMapStyles = StyleSheet.create({
     tintColor: '#FFFFFF',
   },
   
-  // Modal de detalles del reporte
+    // Modal de detalles del reporte
   reportDetailModal: {
     position: 'absolute',
     bottom: 20,
@@ -219,7 +230,20 @@ export const homeMapStyles = StyleSheet.create({
     color: '#1e293b',
     flex: 1,
   },
-  
+
+   // Contador de reportes
+  reportCountBadge: {
+    backgroundColor: '#2563EB',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginLeft: 10,
+  },
+  reportCountText: {
+    fontFamily: 'Roboto_700Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
+  },
   // Estados de carga
   loadingContainer: {
     flex: 1,
@@ -237,19 +261,27 @@ export const homeMapStyles = StyleSheet.create({
     marginTop: 10,
   },
   
-  // Contador de reportes
-  reportCountBadge: {
-    backgroundColor: '#2563EB',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginLeft: 10,
+ logoutButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#FFFFFF', 
+  paddingHorizontal: 10,
+  paddingVertical: 4, // Padding vertical mínimo
+  borderRadius: 8,
+},
+
+  logoutIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#EF4444',
+    marginRight: 5,
   },
-  reportCountText: {
-    fontFamily: 'Roboto_700Bold',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
+
+logoutText: {
+  fontFamily: 'Roboto_700Bold',
+  fontSize: 14,
+  color: '#EF4444',
+},
 
   heatmapToggleButton: {
     position: 'absolute',
@@ -280,34 +312,6 @@ export const homeMapStyles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 4,
   },
-  headerRightContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-logoutButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  backgroundColor: '#fef2f2',
-  borderRadius: 8,
-  borderWidth: 1,
-  borderColor: '#dc2626',
-  marginLeft: 8,
-},
-logoutIcon: {
-  width: 18,
-  height: 18,
-  tintColor: '#dc2626',
-  marginRight: 6,
-},
-logoutText: {
-  fontFamily: 'Roboto_600SemiBold',
-  fontSize: 14,
-  color: '#dc2626',
-  marginLeft: 2,
-},
-
 });
 
 export default homeMapStyles;
