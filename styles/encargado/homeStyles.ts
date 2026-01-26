@@ -1,3 +1,4 @@
+// app/styles/admin/homeStyles.ts
 import { StyleSheet } from 'react-native';
 
 export const homeStyles = StyleSheet.create({
@@ -7,19 +8,21 @@ export const homeStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   
-  // Navegación inferior (Tabs)
+// Navegación inferior (Tabs) compacta y azul
   tabBar: {
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    height: 60,
+    backgroundColor: 'rgba(37, 99, 235, 0.9)',
+    borderTopWidth: 0, // Eliminamos la línea gris/blanca superior
+    height: 50, // Altura compacta ajustada
     paddingBottom: 5,
+    elevation: 0, // Elimina sombras grises en Android
   },
+
   tabItem: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   tabIcon: {
     width: 24,
     height: 24,
@@ -30,11 +33,12 @@ export const homeStyles = StyleSheet.create({
     fontSize: 11,
   },
   tabLabelActive: {
-    color: '#2563EB',
+    color: '#FFFFFF',
   },
   tabLabelInactive: {
-    color: '#94a3b8',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
+  
   
   // Estado vacío (si necesitas para otras pantallas de tabs)
   emptyStateContainer: {
@@ -47,22 +51,23 @@ export const homeStyles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 20,
-    tintColor: '#cbd5e1',
+    tintColor:  'rgba(255, 255, 255, 0.8)',
   },
   emptyStateTitle: {
     fontFamily: 'Roboto_700Bold',
     fontSize: 20,
-    color: '#64748b',
+    color: '#FFFFFF',
     marginBottom: 10,
     textAlign: 'center',
   },
   emptyStateText: {
     fontFamily: 'Montserrat_400Regular',
     fontSize: 15,
-    color: '#94a3b8',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 22,
   },
 });
 
 export default homeStyles;
+
