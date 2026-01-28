@@ -3,13 +3,13 @@ import { Dimensions, StyleSheet } from 'react-native';
 const { width } = Dimensions.get('window');
 
 export const reportStyles = StyleSheet.create({
-  // Contenedor principal - IGUAL A LAS OTRAS PANTALLAS
+  // Contenedor principal 
   container: {
     flex: 1,
     backgroundColor: '#e0ebf7ff',
   },
   
-  // HEADER CON GRADIENTE - NUEVO (IGUAL A OTRAS PANTALLAS)
+  // HEADER CON GRADIENTE 
   headerContainer: {
     backgroundColor: '#667eea',
     paddingTop: 10,
@@ -34,7 +34,7 @@ export const reportStyles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   
-  // STATS CARDS - MÁS ANCHOS (igual que usuarios)
+  // STATS CARDS
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -63,20 +63,20 @@ export const reportStyles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 14,
     fontFamily: 'Inter_900Black',
     color: '#64748B',
     textTransform: 'uppercase',
   },
   
-  // CONTENEDOR DEL SCROLL - SIN PADDING HORIZONTAL (igual que usuarios)
+  // CONTENEDOR DEL SCROLL 
   scrollContent: {
     flexGrow: 1,
     paddingVertical: 16,
     paddingBottom: 40,
   },
   
-  // CONTADOR DE RESULTADOS - MEJORADO
+  // CONTADOR DE RESULTADOS 
   resultsCounter: {
     paddingHorizontal: 20,
     marginBottom: 16,
@@ -87,7 +87,7 @@ export const reportStyles = StyleSheet.create({
     color: '#64748b',
   },
   
-  // FILTROS DESPLEGABLES - MÁS ANCHOS (igual que usuarios)
+  // FILTROS DESPLEGABLES -
   filtersContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -130,7 +130,7 @@ export const reportStyles = StyleSheet.create({
     flex: 1,
   },
   
-  // HEADER ORIGINAL (mantenido por compatibilidad)
+  // HEADER ORIGINAL 
   header: {
     alignItems: 'center',
     marginBottom: 24,
@@ -153,7 +153,7 @@ export const reportStyles = StyleSheet.create({
     marginBottom: 8,
   },
   
-  // CONTENEDOR DE CONTADOR (original - mantenido)
+  // CONTENEDOR DE CONTADOR 
   counterContainer: {
     marginBottom: 16,
   },
@@ -164,13 +164,13 @@ export const reportStyles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // LISTA DE REPORTES - IGUAL QUE USUARIOS
+  // LISTA DE REPORTES 
   reportList: {
     gap: 16,
     paddingHorizontal: 16,
   },
   
-  // TARJETA DE REPORTE - MÁS ANCHA (igual que usuarios)
+  // TARJETA DE REPORTE
   reportCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
@@ -302,7 +302,7 @@ export const reportStyles = StyleSheet.create({
     color: '#64748b',
   },
   
-  // BOTONES DE ACCIÓN - 4 BOTONES PARA ADMIN
+  // BOTONES DE ACCIÓN 
   actionsContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -341,7 +341,7 @@ export const reportStyles = StyleSheet.create({
     marginLeft: 8,
   },
   
-  // MODALES PARA FILTROS - NUEVO (IGUAL A OTRAS PANTALLAS)
+  // MODALES PARA FILTROS
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -397,7 +397,7 @@ export const reportStyles = StyleSheet.create({
     tintColor: '#2563EB',
   },
   
-  // MODALES PARA ASIGNAR/CAMBIAR ESTADO (originales - mantenidos)
+  // MODALES PARA ASIGNAR/CAMBIAR ESTADO 
   modalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,

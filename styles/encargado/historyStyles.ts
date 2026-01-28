@@ -9,7 +9,7 @@ export const historyStyles = StyleSheet.create({
     backgroundColor: '#e0ebf7ff',
   },
   
-  // HEADER CON GRADIENTE - COMPACTO (IGUAL AL REPORTANTE)
+  // HEADER CON GRADIENTE 
   headerContainer: {
     backgroundColor: '#667eea',
     paddingTop: 10,
@@ -38,7 +38,7 @@ export const historyStyles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: 16, // Cambiado de 24 a 16
+    marginHorizontal: 16, 
     marginTop: -10,
     marginBottom: 20,
   },
@@ -46,7 +46,7 @@ export const historyStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
-    width: (width - 48) / 3, // Cambiado de (width - 64) / 3
+    width: (width - 48) / 3, 
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -63,24 +63,24 @@ export const historyStyles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 13, // Mantenido igual
+    fontSize: 14, 
     fontFamily: 'Inter_900Black',
     color: '#64748B',
     textTransform: 'uppercase',
   },
   
-  // CONTENEDOR DEL SCROLL - SIN PADDING HORIZONTAL
+  // CONTENEDOR DEL SCROLL 
   scrollContent: {
     flexGrow: 1,
-    paddingVertical: 16, // Eliminado paddingHorizontal
+    paddingVertical: 16, 
     paddingBottom: 40,
   },
   
-  // FILTROS DESPLEGABLES - MÁS ANCHOS (solo ancho)
+  // FILTROS DESPLEGABLES 
   filtersContainer: {
     flexDirection: 'row',
     gap: 12,
-    paddingHorizontal: 16, // Cambiado de 20 a 16
+    paddingHorizontal: 16, 
     marginBottom: 16,
   },
   filterDropdown: {
@@ -119,7 +119,7 @@ export const historyStyles = StyleSheet.create({
     flex: 1,
   },
   
-  // CONTADOR DE RESULTADOS (IGUAL AL REPORTANTE)
+  // CONTADOR DE RESULTADOS 
   resultsCounter: {
     paddingHorizontal: 20,
     marginBottom: 16,
@@ -133,22 +133,22 @@ export const historyStyles = StyleSheet.create({
   // LISTA DE REPORTES - MÁS ANCHA
   reportList: {
     gap: 16,
-    paddingHorizontal: 16, // Cambiado de 20 a 16
+    paddingHorizontal: 16, 
   },
   reportCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 16,
-    padding: 20, // Aumentado de 18 a 20
+    padding: 20, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 3,
     position: 'relative',
-    marginHorizontal: 0, // Añadido
-    width: '100%', // Añadido
+    marginHorizontal: 0, 
+    width: '100%', 
   },
   
   // ENCABEZADO DE TARJETA
@@ -162,7 +162,7 @@ export const historyStyles = StyleSheet.create({
   // DESCRIPCIÓN (IGUAL AL REPORTANTE)
   descriptionText: {
     fontFamily: 'Roboto_400Regular',
-    fontSize: 14, // Mantenido igual
+    fontSize: 14, 
     color: '#475569',
     lineHeight: 20,
     marginBottom: 12,
@@ -211,7 +211,7 @@ export const historyStyles = StyleSheet.create({
   },
   dateText: {
     fontFamily: 'Roboto_400Regular',
-    fontSize: 13, // Mantenido igual
+    fontSize: 13,
     color: '#64748b',
   },
   statusContainer: {
@@ -222,7 +222,7 @@ export const historyStyles = StyleSheet.create({
   },
   statusText: {
     fontFamily: 'Roboto_500Medium',
-    fontSize: 12, // Mantenido igual
+    fontSize: 12, 
     color: '#475569',
     textTransform: 'capitalize',
   },
@@ -240,7 +240,7 @@ export const historyStyles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     paddingVertical: 12,
-    paddingHorizontal: 4, // Añadido
+    paddingHorizontal: 4,
   },
   advancesButton: {
     backgroundColor: '#2563EB',
@@ -253,7 +253,7 @@ export const historyStyles = StyleSheet.create({
   },
   actionButtonText: {
     fontFamily: 'Roboto_600SemiBold',
-    fontSize: 14, // Mantenido igual
+    fontSize: 14, 
     color: '#FFFFFF',
     marginLeft: 6,
   },
@@ -261,8 +261,8 @@ export const historyStyles = StyleSheet.create({
   // ICONO DE USUARIO ANÓNIMO
   userIconContainer: {
     position: 'absolute',
-    top: 16, // Mantenido igual
-    right: 16, // Mantenido igual
+    top: 16, 
+    right: 16, 
   },
   
   // MODALES (IGUAL AL REPORTANTE)
@@ -286,7 +286,7 @@ export const historyStyles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: 'Roboto_600SemiBold',
-    fontSize: 16, // Mantenido igual
+    fontSize: 16, 
     color: '#1e293b',
     paddingHorizontal: 20,
     paddingVertical: 16,
@@ -307,7 +307,7 @@ export const historyStyles = StyleSheet.create({
   },
   modalOptionText: {
     fontFamily: 'Roboto_400Regular',
-    fontSize: 16, // Mantenido igual
+    fontSize: 16, 
     color: '#334155',
     flex: 1,
   },
@@ -330,18 +330,18 @@ export const historyStyles = StyleSheet.create({
   },
   loadingText: {
     fontFamily: 'Roboto_400Regular',
-    fontSize: 14, // Mantenido igual
+    fontSize: 14, 
     color: '#64748b',
     marginTop: 12,
   },
   emptyContainer: {
     alignItems: 'center',
     paddingVertical: 40,
-    paddingHorizontal: 20, // Añadido
+    paddingHorizontal: 20, 
   },
   emptyText: {
     fontFamily: 'Roboto_400Regular',
-    fontSize: 15, // Mantenido igual
+    fontSize: 15,
     color: '#94a3b8',
     textAlign: 'center',
     marginTop: 12,

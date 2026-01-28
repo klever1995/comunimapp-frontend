@@ -63,7 +63,7 @@ export const userStyles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 13, // RESTAURADO a 13 (original)
+    fontSize: 12, 
     fontFamily: 'Inter_900Black',
     color: '#64748B',
     textTransform: 'uppercase',
@@ -91,7 +91,7 @@ export const userStyles = StyleSheet.create({
   filtersContainer: {
     flexDirection: 'row',
     gap: 12,
-    paddingHorizontal: 16, // Reducido
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   filterDropdown: {
@@ -130,7 +130,7 @@ export const userStyles = StyleSheet.create({
     flex: 1,
   },
   
-  // HEADER ORIGINAL (mantenido por compatibilidad)
+  // HEADER ORIGINAL 
   header: {
     alignItems: 'center',
     marginBottom: 24,
@@ -162,7 +162,7 @@ export const userStyles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   
-  // TOP BAR (original - mantenido)
+  // TOP BAR 
   topBar: {
     marginBottom: 16,
   },
@@ -194,7 +194,7 @@ export const userStyles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // BOTÓN CREAR USUARIO - MÁS ANCHO
+  // BOTÓN CREAR USUARIO 
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -204,7 +204,7 @@ export const userStyles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     marginBottom: 24,
-    marginHorizontal: 16, // Reducido
+    marginHorizontal: 16, 
     shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -224,25 +224,25 @@ export const userStyles = StyleSheet.create({
     color: '#FFFFFF',
   },
   
-  // LISTA DE USUARIOS - MUCHO MÁS ANCHA
+  // LISTA DE USUARIOS 
   userList: {
     gap: 16,
-    paddingHorizontal: 16, // Reducido para que los cards sean más anchos
+    paddingHorizontal: 16, 
   },
   userCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 16,
-    padding: 20, // Aumentado
+    padding: 20, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 3,
     position: 'relative',
-    marginHorizontal: 0, // Sin márgenes laterales
-    width: '100%', // Ocupa todo el ancho disponible
+    marginHorizontal: 0, 
+    width: '100%', 
   },
   userHeader: {
     flexDirection: 'row',
@@ -287,7 +287,7 @@ export const userStyles = StyleSheet.create({
   },
   statusText: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 12, // RESTAURADO a 12 (probable original)
+    fontSize: 12, 
     color: '#FFFFFF',
   },
   
@@ -319,11 +319,11 @@ export const userStyles = StyleSheet.create({
   },
   roleBadgeText: {
     fontFamily: 'Roboto_700Bold',
-    fontSize: 12, // RESTAURADO a 12 (probable original)
+    fontSize: 12,
     color: '#FFFFFF',
   },
   
-  // BOTONES DE ACCIÓN - CON ESTILOS ESPECÍFICOS
+  // BOTONES DE ACCIÓN 
   actionsContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -353,11 +353,11 @@ export const userStyles = StyleSheet.create({
   },
   actionButtonText: {
     fontFamily: 'Roboto_600SemiBold',
-    fontSize: 14, // RESTAURADO a 14 (original)
+    fontSize: 14, 
     color: '#FFFFFF',
   },
   
-  // MODALES PARA FILTROS - NUEVO (IGUAL A OTRAS PANTALLAS)
+  // MODALES PARA FILTROS 
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -413,7 +413,7 @@ export const userStyles = StyleSheet.create({
     tintColor: '#2563EB',
   },
   
-  // MODALES ORIGINALES (mantenidos para compatibilidad)
+  // MODALES ORIGINALES
   modalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
