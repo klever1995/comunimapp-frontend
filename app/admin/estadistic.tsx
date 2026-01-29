@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { estadisticStyles } from '@/styles/admin/estadisticStyles';
+import { estadisticStyles } from "@/styles/admin/estadisticStyles";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -9,12 +9,12 @@ import {
   Modal,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { PieChart } from "react-native-chart-kit";
-
 const METRICS_API_URL = process.env.EXPO_PUBLIC_API_URL;
 const screenWidth = Dimensions.get("window").width;
 
@@ -77,7 +77,10 @@ export default function AdminEstadisticScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+
+  // ESTADO NUEVO: Controla la ventana flotante
   const [modalVisible, setModalVisible] = useState(false);
+
   const [timeFilter, setTimeFilter] = useState("historico");
   const [statusFilter, setStatusFilter] = useState("todos");
 
@@ -107,11 +110,15 @@ export default function AdminEstadisticScreen() {
         const json = await response.json();
 
         setData((prevData) => {
+          // SI ES PETICION CON IA (BOTON):
           if (useAi) {
+            // 1. Abrimos el modal para mostrar el resultado INMEDIATAMENTE
             setModalVisible(true);
             return json;
           }
 
+          // SI ES REFRESCO AUTOMATICO:
+          // Protegemos el mensaje de la IA para que no se borre
           if (
             prevData &&
             prevData.ai_analisis &&
@@ -209,6 +216,7 @@ export default function AdminEstadisticScreen() {
   const graficas = data!.graficas;
   const ai = data!.ai_analisis;
 
+  // COLORES DINAMICOS
   const isDefault = ai?.titulo === "Análisis IA Pendiente";
   const aiColor = isDefault
     ? "#F3F4F6"
@@ -258,17 +266,18 @@ export default function AdminEstadisticScreen() {
 
   return (
     <View style={estadisticStyles.container}>
-      {/* --- MODAL FLOTANTE --- */}
+      {/* --- MODAL FLOTANTE (PANTALLA EMERGENTE) --- */}
       <Modal
         animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={estadisticStyles.modalOverlay}>
-          <View style={[estadisticStyles.modalContent, { borderColor: aiBorder }]}>
+        <View style={localStyles.modalOverlay}>
+          <View style={[localStyles.modalContent, { borderColor: aiBorder }]}>
+            {/* Cabecera del Modal */}
             <View
-              style={[estadisticStyles.modalHeader, { backgroundColor: aiColor }]}
+              style={[localStyles.modalHeader, { backgroundColor: aiColor }]}
             >
               <Ionicons
                 name="sparkles-sharp"
@@ -276,29 +285,32 @@ export default function AdminEstadisticScreen() {
                 color={aiText}
                 style={{ marginRight: -2 }}
               />
-              <Text style={[estadisticStyles.modalTitle, { color: aiText }]}>
+              <Text style={[localStyles.modalTitle, { color: aiText }]}>
                 {ai?.titulo || "Análisis Completado"}
               </Text>
             </View>
 
-            <View style={estadisticStyles.modalBody}>
-              <Text style={estadisticStyles.modalMessage}>{ai?.mensaje}</Text>
+            {/* Cuerpo del Modal */}
+            <View style={localStyles.modalBody}>
+              <Text style={localStyles.modalMessage}>{ai?.mensaje}</Text>
 
               <View style={{ marginTop: 20, flexDirection: "row", gap: 10 }}>
-                <View style={[estadisticStyles.badge, { backgroundColor: aiColor }]}>
+                <View style={[localStyles.badge, { backgroundColor: aiColor }]}>
                   <Text
                     style={{ color: aiText, fontWeight: "bold", fontSize: 12 }}
                   >
+                    {/* Aquí hacemos la magia: buscamos la traducción o usamos "INFO" por defecto */}
                     {etiquetasAlerta[ai?.color_alerta?.toLowerCase()] || "INFO"}
                   </Text>
                 </View>
               </View>
             </View>
+            {/* Botón Cerrar */}
             <TouchableOpacity
-              style={estadisticStyles.closeButton}
+              style={localStyles.closeButton}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={estadisticStyles.closeButtonText}>Entendido</Text>
+              <Text style={localStyles.closeButtonText}>Entendido</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -311,26 +323,25 @@ export default function AdminEstadisticScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
-        <View style={estadisticStyles.headerSimpleRow}>
+        <View style={localStyles.headerSimpleRow}>
           <View>
             <Text style={estadisticStyles.headerTitle}>Panel de Control</Text>
-            <View style={estadisticStyles.userTag}>
+            <View style={localStyles.userTag}>
               <Ionicons
                 name="person-circle-outline"
                 size={14}
                 color="#64748B"
               />
-              <Text style={estadisticStyles.userTagText}>{user?.username}</Text>
+              <Text style={localStyles.userTagText}>{user?.username}</Text>
             </View>
           </View>
 
-          <View style={estadisticStyles.contextIconCircle}>
+          {/* Icono de contexto: Indica que esta es la sección de métricas */}
+          <View style={localStyles.contextIconCircle}>
             <Ionicons name="stats-chart" size={20} color="#2563EB" />
           </View>
         </View>
-
-        {/* TARJETA IA */}
+        {/* TARJETA PERSISTENTE (Lo que queda cuando cierras el modal) */}
         <View
           style={{
             backgroundColor: aiColor,
@@ -343,14 +354,16 @@ export default function AdminEstadisticScreen() {
             elevation: 2,
           }}
         >
+          {/* NIVEL 1: Fila superior (Icono + Título + Botón) */}
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              marginBottom: 5,
+              marginBottom: 5, // Espacio entre el header y el mensaje de abajo
             }}
           >
+            {/* Contenedor del Título (Se encoge si choca con el botón) */}
             <View
               style={{
                 flex: 1,
@@ -371,13 +384,14 @@ export default function AdminEstadisticScreen() {
                   fontSize: 16,
                   color: aiText,
                   lineHeight: 20,
-                  flex: 1,
+                  flex: 1, // Esto obliga al título a saltar de línea si llega al botón
                 }}
               >
                 {ai?.titulo || "Análisis Inteligente"}
               </Text>
             </View>
 
+            {/* Botón Generar (Posición fija a la derecha) */}
             <TouchableOpacity
               onPress={handleGenerateAI}
               disabled={aiLoading}
@@ -405,21 +419,20 @@ export default function AdminEstadisticScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* NIVEL 2: Mensaje inferior (Ocupa todo el ancho disponible) */}
           <Text
             style={{
               color: aiText,
               fontSize: 14,
               lineHeight: 20,
               opacity: 0.9,
-              width: "100%",
+              width: "100%", // Asegura que use todo el ancho de la tarjeta
             }}
           >
             {ai?.mensaje || "Presiona para generar reporte."}
           </Text>
         </View>
-
-        {/* FILTROS DE TIEMPO */}
-        <View style={estadisticStyles.segmentContainer}>
+        <View style={localStyles.segmentContainer}>
           {Object.keys(filterLabels).map((f) => {
             const isActive = timeFilter === f;
             return (
@@ -428,14 +441,16 @@ export default function AdminEstadisticScreen() {
                 activeOpacity={0.7}
                 onPress={() => handleFilterChange("time", f)}
                 style={[
-                  estadisticStyles.segmentButton,
-                  isActive && estadisticStyles.activeSegmentButton,
+                  localStyles.segmentButton,
+                  isActive && localStyles.activeSegmentButton,
+                  // Si quieres usar el color dinámico de tu IA:
+                  // isActive && { backgroundColor: aiColor }
                 ]}
               >
                 <Text
                   style={[
-                    estadisticStyles.segmentText,
-                    isActive && estadisticStyles.activeSegmentText,
+                    localStyles.segmentText,
+                    isActive && localStyles.activeSegmentText,
                   ]}
                 >
                   {filterLabels[f]}
@@ -444,8 +459,6 @@ export default function AdminEstadisticScreen() {
             );
           })}
         </View>
-
-        {/* KPIs */}
         <View style={estadisticStyles.kpiContainer}>
           <View style={estadisticStyles.kpiCard}>
             <Text style={estadisticStyles.kpiValue}>{kpis.total_reportes}</Text>
@@ -460,10 +473,9 @@ export default function AdminEstadisticScreen() {
             >
               {kpis.tasa_resolucion_label}
             </Text>
-            <Text style={estadisticStyles.kpiLabel}>Resolución</Text>
+            <Text style={estadisticStyles.kpiLabel}>Tasa de Resolución</Text>
           </View>
         </View>
-
         <View style={estadisticStyles.kpiContainer}>
           <View style={estadisticStyles.kpiCard}>
             <Text style={[estadisticStyles.kpiValue, { color: "#3B82F6" }]}>
@@ -505,56 +517,160 @@ export default function AdminEstadisticScreen() {
             </Text>
           </View>
         </View>
-
-        {/* PRIORIDAD */}
         <View style={estadisticStyles.chartCard}>
-          <Text style={estadisticStyles.chartTitle}>Prioridad</Text>
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-around",
-              marginTop: 10,
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+              marginBottom: 15,
             }}
           >
-            {Object.entries(graficas?.por_prioridad ?? {}).map(
-              ([prio, count]) => {
-                const color =
-                  prio === "alta"
-                    ? "#EF4444"
-                    : prio === "media"
-                      ? "#F59E0B"
-                      : "#3B82F6";
-                return (
-                  <View key={prio} style={{ alignItems: "center" }}>
-                    <View
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: color,
-                        marginBottom: 5,
-                      }}
-                    />
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                      {count}
-                    </Text>
-                    <Text
-                      style={{
-                        color: "#64748B",
-                        fontSize: 12,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {prio}
-                    </Text>
-                  </View>
-                );
-              },
-            )}
+            <Text style={estadisticStyles.chartTitle}>
+              Análisis de Prioridades
+            </Text>
+            <Ionicons name="stats-chart-outline" size={18} color="#94A3B8" />
           </View>
+
+          {(() => {
+            // Colores modernos de alta fidelidad (vivos pero profesionales)
+            const profColors: Record<string, string> = {
+              baja: "#3B82F6", // Blue 500
+              media: "#F59E0B", // Amber 500
+              alta: "#F43F5E", // Rose 500
+            };
+
+            const priorityOrder = ["baja", "media", "alta"];
+            const rawData = graficas?.por_prioridad ?? {};
+
+            const sortedEntries = priorityOrder
+              .filter((prio) => rawData[prio] !== undefined)
+              .map((prio) => [prio, rawData[prio]]);
+
+            const total = sortedEntries.reduce(
+              (acc, [_, count]) => acc + (count as number),
+              0,
+            );
+
+            if (total === 0)
+              return <Text style={estadisticStyles.noDataText}>Sin datos</Text>;
+
+            return (
+              <View style={{ width: "100%" }}>
+                {/* BARRA ÚNICA: Diseño limpio tipo cápsula */}
+                <View
+                  style={{
+                    height: 14,
+                    flexDirection: "row",
+                    backgroundColor: "#F1F5F9",
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    width: "100%",
+                  }}
+                >
+                  {sortedEntries.map(([prio, count], index) => {
+                    const widthPct = ((count as number) / total) * 100;
+                    if (widthPct === 0) return null;
+
+                    return (
+                      <View
+                        key={prio}
+                        style={{
+                          width: `${widthPct}%`,
+                          backgroundColor: profColors[prio as string],
+                          borderRightWidth:
+                            index < sortedEntries.length - 1 ? 2 : 0,
+                          borderRightColor: "white",
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+
+                {/* LEYENDA: Estilo de Dashboard Moderno */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginTop: 22,
+                  }}
+                >
+                  {sortedEntries.map(([prio, count]) => {
+                    const color = profColors[prio as string];
+                    const percentage = (
+                      ((count as number) / total) *
+                      100
+                    ).toFixed(0);
+
+                    return (
+                      <View
+                        key={prio}
+                        style={{ flex: 1, alignItems: "center" }}
+                      >
+                        {/* Etiqueta con fondo suave (Tint) */}
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: `${color}15`, // 15% de opacidad del color original
+                            paddingHorizontal: 8,
+                            paddingVertical: 3,
+                            borderRadius: 12,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: 3,
+                              backgroundColor: color,
+                              marginRight: 5,
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              fontWeight: "700",
+                              color: color,
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {prio}
+                          </Text>
+                        </View>
+
+                        {/* Valor Principal */}
+                        <Text
+                          style={{
+                            fontSize: 18,
+                            fontWeight: "800",
+                            color: "#1E293B",
+                          }}
+                        >
+                          {count}
+                        </Text>
+
+                        {/* Subtexto de porcentaje */}
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            color: "#64748B",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {percentage}%
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            );
+          })()}
         </View>
 
-        {/* GRÁFICA PIE */}
         <View style={estadisticStyles.chartCard}>
           <Text style={estadisticStyles.chartTitle}>Distribución</Text>
           {pieChartData.length > 0 ? (
@@ -576,41 +692,226 @@ export default function AdminEstadisticScreen() {
           )}
         </View>
 
-        {/* ZONAS ACTIVAS */}
         <View style={estadisticStyles.riskCard}>
-          <View style={estadisticStyles.riskHeader}>
+          <View
+            style={[
+              estadisticStyles.riskHeader,
+              {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              },
+            ]}
+          >
             <Text style={estadisticStyles.chartTitle}>Zonas Activas</Text>
+            <Ionicons name="location-outline" size={18} color="#64748B" />
           </View>
+
           {riskZones.length > 0 ? (
             riskZones.map(([city, count], index) => {
-              const percentage = (count / (kpis.total_reportes || 1)) * 100;
-              const barWidth = Math.min(percentage * 2, 100);
+              // Cálculo del porcentaje real basado en el total
+              const totalReportes = kpis.total_reportes || 1;
+              const percentage = (count / totalReportes) * 100;
+
+              // Color dinámico profesional: Rojo Rose para alertas (>5), Azul Indigo para normales
+              const barColor = count > 5 ? "#F43F5E" : "#3B82F6";
+
               return (
-                <View key={index} style={estadisticStyles.riskRow}>
+                <View
+                  key={index}
+                  style={[estadisticStyles.riskRow, { marginBottom: 18 }]}
+                >
                   <View style={estadisticStyles.riskInfo}>
-                    <Text style={estadisticStyles.riskCity}>{city}</Text>
-                    <View style={estadisticStyles.progressBarBg}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <Text
+                          style={[
+                            estadisticStyles.riskCity,
+                            { color: "#1E293B", fontSize: 14 },
+                          ]}
+                        >
+                          {city}
+                        </Text>
+                      </View>
+                      <Text
+                        style={[
+                          estadisticStyles.riskCount,
+                          { color: barColor, fontWeight: "800" },
+                        ]}
+                      >
+                        {count}{" "}
+                        <Text
+                          style={{
+                            fontSize: 10,
+                            color: "#94A3B8",
+                            fontWeight: "400",
+                          }}
+                        >
+                          u.
+                        </Text>
+                      </Text>
+                    </View>
+
+                    {/* Barra de progreso estilizada */}
+                    <View
+                      style={[
+                        estadisticStyles.progressBarBg,
+                        { height: 8, backgroundColor: "#F1F5F9" },
+                      ]}
+                    >
                       <View
                         style={[
                           estadisticStyles.progressBarFill,
                           {
-                            width: `${barWidth}%`,
-                            backgroundColor: count > 5 ? "#EF4444" : "#3B82F6",
+                            width: `${Math.min(percentage, 100)}%`, // Ancho real basado en datos
+                            backgroundColor: barColor,
+                            height: 8,
+                            borderRadius: 4,
                           },
                         ]}
                       />
                     </View>
                   </View>
-                  <Text style={estadisticStyles.riskCount}>{count}</Text>
                 </View>
               );
             })
           ) : (
-            <Text style={estadisticStyles.noDataText}>Sin actividad</Text>
+            <View style={{ padding: 20, alignItems: "center" }}>
+              <Ionicons name="map-outline" size={30} color="#CBD5E1" />
+              <Text style={[estadisticStyles.noDataText, { marginTop: 8 }]}>
+                Sin actividad en zonas
+              </Text>
+            </View>
           )}
         </View>
-        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
 }
+
+// ESTILOS EXTRA PARA EL MODAL
+const localStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "85%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    borderWidth: 2,
+    overflow: "hidden",
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 10,
+    textAlign: "center",
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: "center",
+  },
+  modalMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+    color: "#1F2937",
+  },
+  badge: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 15,
+  },
+  closeButton: {
+    backgroundColor: "#1F2937",
+    padding: 15,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  //encabexado
+  headerSimpleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 1, // Espacio para que respiren las tarjetas de abajo
+    marginTop: 1,
+  },
+  userTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  userTagText: {
+    fontSize: 13,
+    color: "#64748B",
+    marginLeft: 6,
+    fontWeight: "500",
+  },
+  contextIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#EFF6FF", // Azul pálido muy suave
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#DBEAFE",
+  },
+
+  // fechas:
+  segmentContainer: {
+    flexDirection: "row",
+    backgroundColor: "#F1F5F9",
+    padding: 4,
+    borderRadius: 14,
+    marginBottom: 8,
+    marginTop: -5,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+  },
+  activeSegmentButton: {
+    backgroundColor: "#2563EB", // El azul fuerte que elegiste
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#64748B",
+  },
+  activeSegmentText: {
+    color: "white", // ¡Aquí está el cambio!
+    fontWeight: "700",
+  },
+});
