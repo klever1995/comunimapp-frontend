@@ -40,7 +40,14 @@ type ReportInfo = {
   };
   status: string;
   assigned_to: string | null;
+  reporter_uid?: string | null;     
+  is_anonymous_public?: boolean; 
 };
+
+interface User {
+  id: string;
+  username: string;
+}
 
 export default function EncargadoAvancesScreen() {
   const { reportId } = useLocalSearchParams<{ reportId: string }>();
@@ -52,6 +59,7 @@ export default function EncargadoAvancesScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
@@ -180,6 +188,12 @@ export default function EncargadoAvancesScreen() {
     setShowImageModal(true);
   };
 
+  const getUserName = (userId: string | null) => {
+  if (!userId) return 'No asignado';
+  const user = allUsers.find(u => u.id === userId);
+  return user ? user.username : 'Usuario';
+};
+
   // Calcular conteos por tipo de actualización - CORREGIDO
   const updateTypeCounts = {
     avance: updates.filter(u => u.update_type === 'avance').length,
@@ -221,6 +235,8 @@ export default function EncargadoAvancesScreen() {
           location: reportData.location || { address: 'Sin ubicación', city: '' },
           status: reportData.status || 'pendiente',
           assigned_to: reportData.assigned_to || null,
+          reporter_uid: reportData.reporter_uid || null,        
+          is_anonymous_public: reportData.is_anonymous_public || false,
         });
       } catch (error) {
         console.error('Error cargando reporte:', error);
@@ -231,6 +247,25 @@ export default function EncargadoAvancesScreen() {
 
     loadReportInfo();
   }, [reportId, user?.id]);
+
+  // Cargar todos los usuarios para mostrar nombres
+  useEffect(() => {
+    if (authState.token) {
+      fetchAllUsers();
+    }
+  }, [authState.token]);
+
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/users/`, {
+        headers: { 'Authorization': `Bearer ${authState.token}` },
+      });
+      const data = await response.json();
+      setAllUsers(data);
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+    }
+  };
 
   // Efecto para escuchar actualizaciones en tiempo real - CORREGIDO
   useEffect(() => {
@@ -303,6 +338,7 @@ export default function EncargadoAvancesScreen() {
         <View style={avanceStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#2563EB" />
           <Text style={avanceStyles.loadingText}>Cargando avances...</Text>
+          
         </View>
       </SafeArea>
     );
@@ -380,7 +416,7 @@ export default function EncargadoAvancesScreen() {
           contentContainerStyle={avanceStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Información del reporte */}
+                    {/* Información del reporte */}
           {reportInfo && (
             <View style={avanceStyles.reportInfoCard}>
               <View style={avanceStyles.reportInfoHeader}>
@@ -410,11 +446,11 @@ export default function EncargadoAvancesScreen() {
                 </Text>
               </View>
 
-              {reportInfo.assigned_to && (
+              {reportInfo.reporter_uid && (
                 <View style={[avanceStyles.reportStatusContainer, { paddingTop: 8, borderTopWidth: 0 }]}>
-                  <Text style={avanceStyles.statusLabel}>Asignado a:</Text>
+                  <Text style={avanceStyles.statusLabel}>Reportante:</Text>
                   <Text style={[avanceStyles.statusValue, { color: '#64748b' }]}>
-                    {reportInfo.assigned_to === user?.id ? 'Tú' : 'Encargado'}
+                    {reportInfo.is_anonymous_public ? 'Anónimo' : getUserName(reportInfo.reporter_uid)}
                   </Text>
                 </View>
               )}
@@ -551,7 +587,7 @@ export default function EncargadoAvancesScreen() {
                           fontSize: 12,
                           color: '#64748b'
                         }}>
-                          {update.encargado_id === user?.id ? 'Tú' : 'Encargado'}
+                          Actualizado por: {getUserName(update.encargado_id)}
                         </Text>
                       </View>
                     )}

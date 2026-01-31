@@ -44,6 +44,11 @@ type ReportInfo = {
   is_anonymous_public?: boolean;
 };
 
+interface User {
+  id: string;
+  username: string;
+}
+
 export default function AdminAvancesScreen() {
   const { reportId } = useLocalSearchParams<{ reportId: string }>();
   const { authState } = useAuth();
@@ -54,6 +59,7 @@ export default function AdminAvancesScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
@@ -101,6 +107,12 @@ export default function AdminAvancesScreen() {
       return 'Fecha inválida';
     }
   };
+
+const getUserName = (userId: string | null) => {
+  if (!userId) return 'No asignado';
+  const user = allUsers.find(u => u.id === userId);
+  return user ? user.username : userId.substring(0, 8) + '...';
+};
 
   // Función para obtener el color según el estado
   const getStatusColor = (status: string) => {
@@ -233,6 +245,24 @@ export default function AdminAvancesScreen() {
 
     loadReportInfo();
   }, [reportId, user?.id]);
+
+   useEffect(() => {
+    if (token) {
+      fetchAllUsers();
+    }
+  }, [token]);
+
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/users/`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setAllUsers(data);
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+    }
+  };
 
   // Efecto para escuchar actualizaciones en tiempo real - CORREGIDO
   useEffect(() => {
@@ -416,7 +446,7 @@ export default function AdminAvancesScreen() {
                 <View style={[avanceStyles.reportStatusContainer, { paddingTop: 8, borderTopWidth: 0 }]}>
                   <Text style={avanceStyles.statusLabel}>Asignado a:</Text>
                   <Text style={[avanceStyles.statusValue, { color: '#64748b' }]}>
-                    {reportInfo.assigned_to.substring(0, 8)}...
+                    {getUserName(reportInfo.assigned_to)}
                   </Text>
                 </View>
               )}
@@ -425,7 +455,7 @@ export default function AdminAvancesScreen() {
                 <View style={[avanceStyles.reportStatusContainer, { paddingTop: 8, borderTopWidth: 0 }]}>
                   <Text style={avanceStyles.statusLabel}>Reportante:</Text>
                   <Text style={[avanceStyles.statusValue, { color: '#64748b' }]}>
-                    {reportInfo.reporter_uid.substring(0, 8)}...
+                    {reportInfo.is_anonymous_public ? 'Anónimo' : getUserName(reportInfo.reporter_uid)}
                   </Text>
                 </View>
               )}
@@ -569,7 +599,7 @@ export default function AdminAvancesScreen() {
                           fontSize: 12,
                           color: '#64748b'
                         }}>
-                          Encargado: {update.encargado_id.substring(0, 8)}...
+                         Encargado: {getUserName(update.encargado_id)}
                         </Text>
                       </View>
                     )}

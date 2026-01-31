@@ -50,6 +50,8 @@ type DateFilterOption = {
   value: string | null;
 };
 
+
+
 export default function AdminReportScreen() {
   const { authState: { user, token } } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
@@ -57,7 +59,7 @@ export default function AdminReportScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
   const [selectedDateOption, setSelectedDateOption] = useState<string>('todos'); // AÑADIDO: Estado para fecha
-  const [encargados, setEncargados] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -67,7 +69,7 @@ export default function AdminReportScreen() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [showStatusFilterModal, setShowStatusFilterModal] = useState(false);
-  const [showDateFilterModal, setShowDateFilterModal] = useState(false); // AÑADIDO: Modal para fecha
+  const [showDateFilterModal, setShowDateFilterModal] = useState(false); 
 
   // AÑADIDO: Opciones de filtro de fecha
   const dateOptions: DateFilterOption[] = [
@@ -107,6 +109,12 @@ export default function AdminReportScreen() {
         return null;
     }
   };
+
+  const getUserName = (userId: string | null) => {
+  if (!userId) return 'No asignado';
+  const user = allUsers.find(u => u.id === userId);
+  return user ? user.username : userId.substring(0, 8) + '...';
+};
 
   // Cargar reportes en tiempo real con Firestore
   useEffect(() => {
@@ -164,13 +172,13 @@ export default function AdminReportScreen() {
 
   const fetchEncargados = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/?role=encargado`, {
+      const response = await fetch(`${API_URL}/users/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
       const data = await response.json();
-      setEncargados(data);
+      setAllUsers(data);
     } catch (error) {
       console.error('Error cargando encargados:', error);
     }
@@ -625,14 +633,14 @@ export default function AdminReportScreen() {
                     <View style={reportStyles.infoRow}>
                       <Text style={reportStyles.infoLabel}>Reportante:</Text>
                       <Text style={reportStyles.infoValue}>
-                        {isAnonymous ? 'Anónimo' : (report.reporter_uid ? report.reporter_uid.substring(0, 8) + '...' : 'No disponible')}
-                      </Text>
+                      {getUserName(report.reporter_uid)}
+                    </Text>
                     </View>
                     {report.assigned_to && (
                       <View style={reportStyles.infoRow}>
                         <Text style={reportStyles.infoLabel}>Asignado a:</Text>
                         <Text style={reportStyles.infoValue}>
-                          {report.assigned_to.substring(0, 8)}...
+                          {getUserName(report.assigned_to)}
                         </Text>
                       </View>
                     )}
@@ -768,15 +776,15 @@ export default function AdminReportScreen() {
             </Text>
             
             <ScrollView style={reportStyles.modalList}>
-              {encargados.length === 0 ? (
+              {allUsers.filter(u => u.role === 'encargado').length === 0 ? (
                 <Text style={reportStyles.emptyText}>No hay encargados disponibles</Text>
               ) : (
-                encargados.map((encargado) => (
+                allUsers.filter(u => u.role === 'encargado').map((encargado) => (
                   <TouchableOpacity
                     key={encargado.id}
                     style={[
                       reportStyles.modalItem,
-                      assigning && { opacity: 0.5 } // Añade opacidad cuando está cargando
+                      assigning && { opacity: 0.5 } 
                     ]}
                     onPress={() => handleAssignReport(encargado.id)}
                     disabled={assigning} 

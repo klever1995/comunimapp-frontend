@@ -39,6 +39,11 @@ type ReportInfo = {
   assigned_to: string | null;
 };
 
+interface User {
+  id: string;
+  username: string;
+}
+
 export default function AvancesScreen() {
   const { reportId } = useLocalSearchParams<{ reportId: string }>();
   const { authState } = useAuth();
@@ -47,6 +52,7 @@ export default function AvancesScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   
   const [updates, setUpdates] = useState<CaseUpdate[]>([]);
   const [reportInfo, setReportInfo] = useState<ReportInfo | null>(null);
@@ -119,6 +125,12 @@ const openImageGallery = (images: string[], startIndex: number) => {
     }
   };
 
+  const getUserName = (userId: string | null) => {
+  if (!userId) return 'No asignado';
+  const user = allUsers.find(u => u.id === userId);
+  return user ? user.username : 'Encargado';
+};
+
   // Calcular conteos por tipo de actualización - CORREGIDO (SOLO 3)
   const updateTypeCounts = {
     avance: updates.filter(u => u.update_type === 'avance').length,
@@ -183,6 +195,25 @@ const openImageGallery = (images: string[], startIndex: number) => {
 
     loadReportInfo();
   }, [reportId, user?.id]);
+
+  // Cargar todos los usuarios para mostrar nombres
+  useEffect(() => {
+    if (authState.token) {
+      fetchAllUsers();
+    }
+  }, [authState.token]);
+
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/users/`, {
+        headers: { 'Authorization': `Bearer ${authState.token}` },
+      });
+      const data = await response.json();
+      setAllUsers(data);
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+    }
+  };
 
   // Efecto para escuchar actualizaciones en tiempo real - CORREGIDO (SOLO 3 TIPOS)
   useEffect(() => {
@@ -366,7 +397,7 @@ const openImageGallery = (images: string[], startIndex: number) => {
                 <View style={[avanceStyles.reportStatusContainer, { paddingTop: 8, borderTopWidth: 0 }]}>
                   <Text style={avanceStyles.statusLabel}>Asignado a:</Text>
                   <Text style={[avanceStyles.statusValue, { color: '#64748b' }]}>
-                    Encargado
+                    {getUserName(reportInfo.assigned_to)}
                   </Text>
                 </View>
               )}
@@ -500,7 +531,7 @@ const openImageGallery = (images: string[], startIndex: number) => {
                         fontSize: 12,
                         color: '#64748b'
                       }}>
-                        Actualizado por el encargado
+                         Actualizado por: {getUserName(update.encargado_id)}
                       </Text>
                     </View>
                   )}
