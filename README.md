@@ -1,50 +1,30 @@
-# Welcome to your Expo app 👋
+<div align="center">
+  <p><span style="font-size: 2em;"><strong>UNIVERSIDAD CENTRAL DEL ECUADOR</strong></span></p>
+  <p><span style="font-size: 1.5em;"><strong>FACULTAD DE INGENIERÍA Y CIENCIAS APLICADAS</strong></span></p>
+</div>
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+<p><strong>PROYECTO: SALVUM (SISTEMA DE REPORTES CIUDADANOS)</strong></p>
 
-## Get started
+<p><strong>Tabla de Arquitectura y Tecnologías Frontend</strong></p>
 
-1. Install dependencies
+| Componente | Tecnología | Propósito |
+| :--- | :--- | :--- |
+| **Framework Móvil** | React Native (Expo) | Desarrollo de app multiplataforma (iOS/Android) con hot reload |
+| **Navegación** | React Navigation (Stack) | Gestión de rutas y flujos de pantallas por rol de usuario |
+| **Estado Global** | React Context (AuthContext) | Manejo centralizado de autenticación, usuario y token JWT |
+| **Persistencia Local** | AsyncStorage | Almacenamiento seguro de sesiones de usuario en el dispositivo |
+| **Conexión Firebase** | Firebase SDK (JavaScript) | Integración con Auth, Firestore y FCM desde el cliente |
+| **Notificaciones Push** | Expo Notifications | Solicitud de permisos, registro de tokens FCM y recepción de notificaciones |
+| **Geolocalización** | Expo Location + Google Maps SDK | Obtención de coordenadas y visualización de mapas interactivos |
+| **UI/Componentes** | React Native Paper / Custom Styles | Interfaz de usuario consistente y responsive |
+| **Llamadas a API** | Fetch API + Interceptores | Comunicación con el backend FastAPI (login, reportes, updates) |
+| **Gestión de Imágenes** | Expo Image Picker + Cloudinary SDK | Selección, previsualización y subida de fotos desde la galería/cámara |
+| **Tipado Estático** | TypeScript | Validación de tipos, autocompletado y mayor robustez en desarrollo |
+| **Manejo de Fuentes** | Expo Font (Google Fonts) | Carga de fuentes personalizadas (Roboto, Montserrat) |
+| **Splash Screen** | Expo Splash Screen | Pantalla de carga personalizada durante la inicialización |
+| **Build y Distribución** | EAS (Expo Application Services) | Construcción de binaries nativos y despliegue a stores |
 
-   ```bash
-   npm install
-   ```
+<br>
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+<p><strong>Link del Repositorio Frontend:</strong></p>
+<p>https://github.com/klever1995/comunimapp-frontend.git</p>
